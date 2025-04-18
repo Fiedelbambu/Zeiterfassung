@@ -1,0 +1,54 @@
+# Build-Ordner
+bin/
+obj/
+out/
+publish/
+
+# User-spezifische Dateien
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VC.db
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+
+# Paketverwaltung
+packages/
+*.nupkg
+*.snupkg
+*.nuspec
+
+# Logs
+*.log
+
+# Backup-Dateien
+*.bak
+*.tmp
+*.old
+
+# Web-spezifisch
+wwwroot/node_modules/
+wwwroot/lib/
+.env
+*.env
+
+# Konfiguration (nur lokal gültig)
+appsettings.Development.json
+
+# Betriebssystemspezifisch
+*.DS_Store
+Thumbs.db
+
+# Sonstiges
+_ReSharper*/
+*.resharper
+*.dotCover
+*.ncrunch*
+*.coverage
+*.vs/
