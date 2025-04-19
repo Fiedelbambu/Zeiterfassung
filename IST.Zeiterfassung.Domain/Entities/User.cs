@@ -13,9 +13,11 @@ namespace IST.Zeiterfassung.Domain.Entities
         public string PasswordHash { get; set; } = string.Empty;
 
         public Role Role { get; set; } = Role.Employee;
-    
-        
-        public List<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
+
+        public bool Aktiv { get; set; } = true;
+        public DateTime ErstelltAm { get; set; } = DateTime.UtcNow;
+
+        public List<TimeEntry> TimeEntries { get; set; } = new();
         public List<Absence> Absences { get; set; } = new();
 
 
