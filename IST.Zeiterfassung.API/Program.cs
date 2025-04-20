@@ -3,47 +3,87 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using IST.Zeiterfassung.Application.Interfaces;
 using IST.Zeiterfassung.Application.Services;
+using IST.Zeiterfassung.Application.Settings;
 using IST.Zeiterfassung.Application.Validators;
-using IST.Zeiterfassung.Persistence;
-using IST.Zeiterfassung.Persistence.Repositories;
-using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
 using IST.Zeiterfassung.Domain.Entities;
 using IST.Zeiterfassung.Domain.Enums;
+using IST.Zeiterfassung.Persistence;
+using IST.Zeiterfassung.Persistence.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//Todo: ein globales Error-Handling (Middleware) aufbauen oder Result<T> mit HTTP-Codes zu mappen.
-
 
 // Datenbank-Konfiguration (SQLite)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Feiertage abrufen und lokal cachen
+builder.Services.AddHttpClient<IFeiertagsService, FeiertagsService>();
+
+
 // Dependency Injection für Services & Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Controller + FluentValidation registrieren
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.RegisterValidatorsFromAssemblyContaining<RegisterUserValidator>();
-    });
+builder.Services.AddFluentValidationAutoValidation()
+                .AddFluentValidationClientsideAdapters();
+
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserValidator>();
+
+builder.Services.AddControllers(); // 
 
 // Swagger für OpenAPI Dokumentation
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
-
-// Middleware-Pipeline
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+builder.Services.AddSwaggerGen(options =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "IST Zeiterfassung API v1");
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
 });
 
+
+
+
+
+// JWT-Konfiguration (muss VOR builder.Build() passieren)
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<JwtSettings>(jwtSection);
+
+var jwtSettings = jwtSection.Get<JwtSettings>();
+var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience
+    };
+});
+
+builder.Services.AddAuthorization(); // ✅ HIER ergänzen
+var app = builder.Build();
+
+// Admin-Benutzer beim Start anlegen
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -72,9 +112,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Middleware
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // ← wichtig, sonst funktionieren die Routen nicht!
 
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "IST Zeiterfassung API v1");
+});
+
+app.MapControllers();
 app.Run();

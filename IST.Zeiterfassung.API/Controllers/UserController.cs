@@ -1,6 +1,7 @@
 ﻿using IST.Zeiterfassung.Application.DTOs.User;
 using IST.Zeiterfassung.Application.Interfaces;
 using IST.Zeiterfassung.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IST.Zeiterfassung.API.Controllers;
@@ -10,6 +11,21 @@ namespace IST.Zeiterfassung.API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id}/role")]
+    public async Task<IActionResult> ChangeRole(Guid id, [FromBody] ChangeUserRoleDTO dto)
+    {
+        var result = await _userService.ChangeRoleAsync(id, dto);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.ErrorMessage });
+
+        return Ok(new { message = result.Value });
+    }
+
+
 
     public UserController(IUserService userService)
     {
@@ -33,6 +49,7 @@ public class UserController : ControllerBase
     /// <summary>
     /// Gibt alle Benutzer zurück (nur zu Testzwecken).
     /// </summary>
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -71,17 +88,8 @@ public class UserController : ControllerBase
     /// <summary>
     /// Ändert die Rolle eines Benutzers (z. B. Admin oder Employee).
     /// </summary>
-    [HttpPut("{id:guid}/role")]
-    public async Task<IActionResult> ChangeRole(Guid id, [FromBody] ChangeUserRoleDTO dto)
-    {
-        var result = await _userService.ChangeRoleAsync(id, dto);
-
-        if (!result.Success)
-            return BadRequest(new { message = result.ErrorMessage });
-
-        return Ok(new { message = result.Value });
-    }
-
+   
+   
     /// <summary>
     /// Schaltet den Aktiv-Status eines Benutzers um (aktiv/inaktiv).
     /// </summary>

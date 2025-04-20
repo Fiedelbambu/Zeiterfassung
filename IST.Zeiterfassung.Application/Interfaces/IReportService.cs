@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IST.Zeiterfassung.Application.Interfaces
+using IST.Zeiterfassung.Application.DTOs.Report;
+using IST.Zeiterfassung.Application.Results;
+
+namespace IST.Zeiterfassung.Application.Interfaces;
+
+public interface IReportService
 {
-    internal interface IReportService
-    {
-    }
+    Task<Result<MonthlyReportDTO>> GetMonthlyReportAsync(Guid userId, int jahr, int monat);
 }
+

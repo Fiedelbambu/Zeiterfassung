@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IST.Zeiterfassung.Application": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54671;http://localhost:54672"
+    }
+  }
+}

@@ -50,29 +50,22 @@ public class UserService : IUserService
         return Result<UserResponseDTO>.Ok(response);
     }
 
-    public async Task<Result<UserResponseDTO>> LoginAsync(LoginUserDTO dto)
+    public async Task<Result<User>> LoginAsync(LoginUserDTO dto)
     {
         var user = await _userRepository.GetByUsernameAsync(dto.Username);
 
         if (user is null)
-            return Result<UserResponseDTO>.Fail("Benutzer nicht gefunden.");
+            return Result<User>.Fail("Benutzer nicht gefunden.");
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Passwort, user.PasswordHash))
-            return Result<UserResponseDTO>.Fail("Passwort falsch.");
+            return Result<User>.Fail("Passwort falsch.");
 
         if (!user.Aktiv)
-            return Result<UserResponseDTO>.Fail("Benutzer ist deaktiviert.");
+            return Result<User>.Fail("Benutzer ist deaktiviert.");
 
-        var response = new UserResponseDTO
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        };
-
-        return Result<UserResponseDTO>.Ok(response);
+        return Result<User>.Ok(user);
     }
+
 
     public async Task<List<UserResponseDTO>> GetAllAsync()
     {
