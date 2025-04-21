@@ -34,6 +34,7 @@ namespace IST.Zeiterfassung.Domain.Entities
         public DateTime ErfasstAm { get; set; } = DateTime.UtcNow;
 
         public TimeSpan Pausenzeit { get; set; } = TimeSpan.Zero;
+        public DateTime Date { get; set; }
 
         public TimeSpan NettoDauer => Dauer - Pausenzeit;
         public TimeSpan Dauer => Ende - Start;

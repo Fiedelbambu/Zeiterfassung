@@ -58,10 +58,12 @@ public class AbsenceServiceTests
             Typ = AbsenceType.Krankheit,
             StartDate = DateTime.Today,
             EndDate = DateTime.Today.AddDays(1),
-            Kommentar = "Test",
-            Status = AbsenceStatus.Beantragt,
+            Kommentar = "Krankheit",
+         //   Status = AbsenceStatus.Beantragt,
+            Status = AbsenceStatus.Genehmigt,
             ErstelltAm = DateTime.UtcNow,
             User = new User { Username = "testuser" }
+        
         };
 
         _repoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
@@ -74,6 +76,8 @@ public class AbsenceServiceTests
         result.Value.Should().NotBeNull();
         result.Value!.Reason.Should().Be("Krankheit");
         result.Value!.Username.Should().Be("testuser");
+        result.Value!.Status.Should().Be(AbsenceStatus.Genehmigt); 
+
     }
 
     [Fact]

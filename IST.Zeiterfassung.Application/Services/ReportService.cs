@@ -9,11 +9,16 @@ public class ReportService : IReportService
 {
     private readonly ITimeEntryRepository _timeEntryRepo;
     private readonly IAbsenceRepository _absenceRepo;
+    private readonly IUserRepository _userRepository;
 
-    public ReportService(ITimeEntryRepository timeEntryRepo, IAbsenceRepository absenceRepo)
+    public ReportService(
+    ITimeEntryRepository timeEntryRepo,
+    IAbsenceRepository absenceRepo,
+    IUserRepository userRepository)
     {
         _timeEntryRepo = timeEntryRepo;
         _absenceRepo = absenceRepo;
+        _userRepository = userRepository; // korrekt initialisiert
     }
 
     public async Task<Result<MonthlyReportDTO>> GetMonthlyReportAsync(Guid userId, int jahr, int monat)
@@ -54,6 +59,7 @@ public class ReportService : IReportService
                 Pause = TimeSpan.FromMinutes(pausen),
                 IstMontage = tag.Any(e => e.IstMontage),
                 Projekte = projekte,
+                Status = "Geleistet",
                 Beschreibungen = beschreibungen
             });
         }
@@ -75,7 +81,53 @@ public class ReportService : IReportService
             Projekttage = projekttage,
             Urlaubstage = urlaub,
             Krankheitstage = krank,
+            Status = "Geleistet",
             HomeOfficeTage = home
         });
     }
+
+
+    public async Task<List<UserReportSummaryDTO>> GetMonthlySummaryAsync(int jahr, int monat)
+    {
+        var alleBenutzer = await _userRepository.GetAllAsync();
+
+        var summaries = new List<UserReportSummaryDTO>();
+
+        foreach (var user in alleBenutzer)
+        {
+            var reportResult = await GetMonthlyReportAsync(user.Id, jahr, monat);
+            if (!reportResult.Success || reportResult.Value == null)
+                continue;
+
+            var report = reportResult.Value;
+
+            // Gesamtarbeitszeit
+            var netto = report.Tage.Aggregate(TimeSpan.Zero, (summe, t) => summe + t.Nettozeit);
+
+            // Optional: feste 8h-Sollzeit je Werktag
+            var start = new DateTime(jahr, monat, 1);
+            var end = start.AddMonths(1);
+            var werktage = Enumerable.Range(0, (end - start).Days)
+                .Select(i => start.AddDays(i))
+                .Count(d => d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday);
+
+            var soll = TimeSpan.FromHours(werktage * 8); // Standardmodell 8h pro Werktag
+
+            summaries.Add(new UserReportSummaryDTO
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Gesamtnettozeit = netto,
+                Urlaubstage = report.Urlaubstage,
+                Krankheitstage = report.Krankheitstage,
+                HomeOfficeTage = report.HomeOfficeTage,
+                Sollzeit = soll
+            });
+        }
+
+        return summaries.OrderBy(s => s.Username).ToList();
+    }
+
+
+
 }

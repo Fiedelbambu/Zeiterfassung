@@ -8,6 +8,7 @@ public interface IAbsenceRepository
     Task<Absence?> GetByIdAsync(Guid id);
     Task<List<Absence>> GetAllByUserIdAsync(Guid userId);
     Task DeleteAsync(Absence entity);
+    Task<List<Absence>> GetAllByUserIdAndRangeAsync(Guid userId, DateOnly from, DateOnly to);
 
     Task UpdateAsync(Absence entity);
     Task<List<Absence>> GetAllAsync();

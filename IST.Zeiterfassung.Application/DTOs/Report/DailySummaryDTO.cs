@@ -11,4 +11,9 @@ public class DailySummaryDTO
     public bool IstMontage { get; set; }
     public List<string> Projekte { get; set; } = new();
     public List<string> Beschreibungen { get; set; } = new();
+    
+    public string Status { get; set; } = "Offen"; // z. B. "Geleistet", "Urlaub", etc.
+
+
+
 }

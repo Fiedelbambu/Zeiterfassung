@@ -14,5 +14,8 @@ namespace IST.Zeiterfassung.Application.DTOs.User
         public string? Email { get; set; } = string.Empty;
         public Role Role { get; set; }
 
+        // Ergänzung für QR-Login:
+        public string? QrToken { get; set; }
+        public DateTime? QrTokenExpiresAt { get; set; }
     }
 }

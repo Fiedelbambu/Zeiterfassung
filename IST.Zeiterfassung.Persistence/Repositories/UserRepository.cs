@@ -14,6 +14,20 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
+    public async Task<User?> GetByNfcUidAsync(string uid)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.NfcId == uid);
+    }
+
+    public async Task<User?> GetByQrTokenAsync(string token)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.QrToken == token);
+    }
+
+
+
     public async Task AddAsync(User user)
     {
         _context.Users.Add(user);

@@ -11,11 +11,13 @@ namespace IST.Zeiterfassung.Tests.Services;
 
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _userRepositoryMock;
+    private readonly Mock<IUserRepository> _repoMock;
+    private readonly UserService _service;
 
     public UserServiceTests()
     {
-        _userRepositoryMock = new Mock<IUserRepository>();
+        _repoMock = new Mock<IUserRepository>();
+        _service = new UserService(_repoMock.Object);
     }
 
     [Fact]
@@ -29,43 +31,34 @@ public class UserServiceTests
             Passwort = "Geheim123"
         };
 
-        _userRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<User>()))
-                           .Returns(Task.CompletedTask);
-
-        var service = new UserService(_userRepositoryMock.Object);
+        _repoMock.Setup(repo => repo.AddAsync(It.IsAny<User>()))
+                 .Returns(Task.CompletedTask);
 
         // Act
-        var result = await service.RegisterAsync(dto);
+        var result = await _service.RegisterAsync(dto);
 
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Value.Should().NotBeNull();
-
         result.Value!.Username.Should().Be(dto.Username);
         result.Value!.Email.Should().Be(dto.Email);
-
-        _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
+        _repoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
     }
 
     [Fact]
     public async Task ChangePassword_Should_UpdatePasswordHash()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, PasswordHash = "alt" };
         var dto = new ChangePasswordDTO { NeuesPasswort = "Neu123!" };
 
-        _userRepositoryMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
-        var service = new UserService(_userRepositoryMock.Object);
+        var result = await _service.ChangePasswordAsync(userId, dto);
 
-        // Act
-        var result = await service.ChangePasswordAsync(userId, dto);
-
-        // Assert
         result.Success.Should().BeTrue();
-        _userRepositoryMock.Verify(r => r.UpdateAsync(It.Is<User>(u =>
+        _repoMock.Verify(r => r.UpdateAsync(It.Is<User>(u =>
             BCrypt.Net.BCrypt.Verify("Neu123!", u.PasswordHash)
         )), Times.Once);
     }
@@ -73,41 +66,66 @@ public class UserServiceTests
     [Fact]
     public async Task ChangeRole_Should_UpdateUserRole()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, Role = Role.Employee };
         var dto = new ChangeUserRoleDTO { NeueRolle = Role.Admin };
 
-        _userRepositoryMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
-        var service = new UserService(_userRepositoryMock.Object);
+        var result = await _service.ChangeRoleAsync(userId, dto);
 
-        // Act
-        var result = await service.ChangeRoleAsync(userId, dto);
-
-        // Assert
         result.Success.Should().BeTrue();
         user.Role.Should().Be(Role.Admin);
-        _userRepositoryMock.Verify(r => r.UpdateAsync(user), Times.Once);
+        _repoMock.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
     [Fact]
     public async Task ToggleAktiv_Should_SwitchStatus()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, Aktiv = false };
 
-        _userRepositoryMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
-        var service = new UserService(_userRepositoryMock.Object);
+        var result = await _service.ToggleAktivAsync(userId);
 
-        // Act
-        var result = await service.ToggleAktivAsync(userId);
-
-        // Assert
         result.Success.Should().BeTrue();
         user.Aktiv.Should().BeTrue();
-        _userRepositoryMock.Verify(r => r.UpdateAsync(user), Times.Once);
+        _repoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginByNfcAsync_Should_ReturnUser_WhenUidValid()
+    {
+        var uid = "04:A3:12:FE";
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = "nfcUser",
+            NfcId = uid,
+            Aktiv = true,
+            Role = Role.Admin
+        };
+
+        _repoMock.Setup(r => r.GetByNfcUidAsync(uid)).ReturnsAsync(user);
+
+        var result = await _service.LoginByNfcAsync(uid);
+
+        result.Success.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Username.Should().Be("nfcUser");
+    }
+
+    [Fact]
+    public async Task LoginByQrAsync_Should_Fail_WhenTokenNotFound()
+    {
+        var token = "unknown-token";
+
+        _repoMock.Setup(r => r.GetByQrTokenAsync(token)).ReturnsAsync((User?)null);
+
+        var result = await _service.LoginByQrAsync(token);
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage!.ToLowerInvariant().Should().Contain("kein benutzer");
     }
 }

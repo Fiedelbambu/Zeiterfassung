@@ -19,6 +19,7 @@ namespace IST.Zeiterfassung.Persistence
         public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
         public DbSet<Absence> Absences => Set<Absence>();
         public DbSet<Zeitmodell> Zeitmodelle => Set<Zeitmodell>();
+        public DbSet<LoginAudit> LoginAudits { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

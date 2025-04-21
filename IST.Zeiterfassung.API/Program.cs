@@ -29,6 +29,9 @@ builder.Services.AddHttpClient<IFeiertagsService, FeiertagsService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IFeiertagRepository, FeiertagRepository>(); // ✅ HIER NEU
+builder.Services.AddScoped<FeiertagsImportService>();
+builder.Services.AddScoped<ILoginAuditRepository, LoginAuditRepository>();
 
 // Controller + FluentValidation registrieren
 builder.Services.AddFluentValidationAutoValidation()

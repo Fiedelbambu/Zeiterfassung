@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace IST.Zeiterfassung.Domain.Enums
 {
-    public class ChangeUserRoleDTO
+    public enum LoginMethod
     {
-        public Role NeueRolle { get; set; }
+        Keine = 0,
+        Passwort = 1,
+        NFC = 2,
+        QRCode = 4,
+        Token = 8
     }
 }

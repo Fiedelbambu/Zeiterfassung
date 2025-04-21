@@ -40,9 +40,34 @@ public class TimeEntryRepository : ITimeEntryRepository
         await _context.SaveChangesAsync();
     }
 
+
+
     public async Task DeleteAsync(TimeEntry entry)
     {
         _context.TimeEntries.Remove(entry);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<List<TimeEntry>> GetByUserAndRangeAsync(Guid userId, DateOnly from, DateOnly to)
+    {
+        var fromDateTime = from.ToDateTime(TimeOnly.MinValue);
+        var toDateTime = to.ToDateTime(TimeOnly.MaxValue);
+
+        return await _context.TimeEntries
+            .Where(t => t.ErfasstFürUserId == userId &&
+                        t.Date >= fromDateTime && t.Date <= toDateTime)
+            .ToListAsync();
+    }
+
+    public async Task<List<TimeEntry>> GetTodayEntriesAsync(Guid userId)
+    {
+        var heute = DateTime.UtcNow.Date;
+
+        return await _context.TimeEntries
+            .Where(t => t.ErfasstFürUserId == userId && t.Date.Date == heute)
+            .OrderBy(t => t.Start)
+            .ToListAsync();
+    }
+
+
 }

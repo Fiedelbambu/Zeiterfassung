@@ -41,4 +41,32 @@ public class FeiertagRepository : IFeiertagRepository
         return await _context.Feiertage
             .AnyAsync(f => f.Datum == datum.Date && f.RegionCode == regionCode);
     }
+
+    public async Task<List<Feiertag>> GetByRangeAsync(DateOnly from, DateOnly to)
+    {
+        var fromDateTime = from.ToDateTime(TimeOnly.MinValue);
+        var toDateTime = to.ToDateTime(TimeOnly.MaxValue);
+
+        return await _context.Feiertage
+            .Where(f => f.Datum >= fromDateTime && f.Datum <= toDateTime)
+            .ToListAsync();
+    }
+
+    public async Task SaveAllAsync(List<Feiertag> feiertage)
+    {
+        if (!feiertage.Any())
+            return;
+
+        var jahr = feiertage.First().Datum.Year;
+
+        var vorhandene = _context.Feiertage
+            .Where(f => f.Datum.Year == jahr && f.RegionCode == feiertage.First().RegionCode);
+
+        _context.Feiertage.RemoveRange(vorhandene);
+
+        await _context.Feiertage.AddRangeAsync(feiertage);
+        await _context.SaveChangesAsync();
+    }
+
+
 }

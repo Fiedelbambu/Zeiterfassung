@@ -25,6 +25,15 @@ namespace IST.Zeiterfassung.Domain.Entities
         public TimeSpan? GleitzeitMonatslimit { get; set; }
         public bool SaldoÜbertragAktiv { get; set; } = false;
 
+        public double? GetSollzeitInStundenFor(DateOnly datum)
+        {
+            if (SollzeitProTag.TryGetValue(datum.DayOfWeek, out var timeSpan))
+                return timeSpan.TotalHours;
+
+            return null;
+        }
+
+
         // Optional: Schichtsystem (später)
         // public string? SchichtTyp { get; set; }
     }

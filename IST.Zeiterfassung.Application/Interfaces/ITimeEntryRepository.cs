@@ -11,7 +11,10 @@ namespace IST.Zeiterfassung.Application.Interfaces
         Task<List<TimeEntry>> GetAllByUserIdAsync(Guid userId);
 
         Task UpdateAsync(TimeEntry entry);
+        Task<List<TimeEntry>> GetTodayEntriesAsync(Guid userId);
 
         Task DeleteAsync(TimeEntry entry);
+        Task<List<TimeEntry>> GetByUserAndRangeAsync(Guid userId, DateOnly from, DateOnly to);
+
     }
 }

@@ -4,6 +4,7 @@ public class MonthlyReportDTO
 {
     public Guid UserId { get; set; }
     public string? Username { get; set; }
+    public string Status { get; set; } = "Offen"; // z. B. Gesamteindruck, optional
 
     public int Monat { get; set; }
     public int Jahr { get; set; }
@@ -18,3 +19,7 @@ public class MonthlyReportDTO
     public int Krankheitstage { get; set; }
     public int HomeOfficeTage { get; set; }
 }
+
+
+
+

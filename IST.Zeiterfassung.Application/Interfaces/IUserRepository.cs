@@ -15,5 +15,8 @@ namespace IST.Zeiterfassung.Application.Interfaces
         Task<User?> GetByUsernameAsync(string username);
         Task<User?> GetByIdAsync(Guid id);
         Task UpdateAsync(User user);
+        Task<User?> GetByNfcUidAsync(string uid);
+        Task<User?> GetByQrTokenAsync(string token);
+
     }
 }

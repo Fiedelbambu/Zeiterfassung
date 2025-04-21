@@ -68,10 +68,14 @@ public class AbsenceService : IAbsenceService
             Id = entity.Id,
             StartDate = entity.StartDate,
             EndDate = entity.EndDate,
-            Reason = entity.Reason,
+            //    Reason = entity.Reason,
+            Reason = entity.Kommentar, // korrigiert          
             UserId = entity.UserId,
             Username = entity.User?.Username, // optional, wenn EF es geladen hat
-            Duration = entity.EndDate - entity.StartDate
+            Duration = entity.EndDate - entity.StartDate,
+            Status = entity.Status,           // erforderlich
+            Typ = entity.Typ                  // falls ebenfalls geprüft
+
         };
     }
 

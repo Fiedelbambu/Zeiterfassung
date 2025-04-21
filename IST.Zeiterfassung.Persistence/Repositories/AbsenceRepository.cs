@@ -19,6 +19,18 @@ public class AbsenceRepository : IAbsenceRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<List<Absence>> GetAllByUserIdAndRangeAsync(Guid userId, DateOnly from, DateOnly to)
+    {
+        var fromDateTime = from.ToDateTime(TimeOnly.MinValue);
+        var toDateTime = to.ToDateTime(TimeOnly.MaxValue);
+
+        return await _context.Absences
+            .Where(a => a.UserId == userId &&
+                        a.StartDate <= toDateTime &&
+                        a.EndDate >= fromDateTime)
+            .ToListAsync();
+    }
+
     public async Task<Absence?> GetByIdAsync(Guid id)
     {
         return await _context.Absences

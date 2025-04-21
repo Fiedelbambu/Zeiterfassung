@@ -12,5 +12,7 @@ namespace IST.Zeiterfassung.Application.Interfaces;
 public interface IReportService
 {
     Task<Result<MonthlyReportDTO>> GetMonthlyReportAsync(Guid userId, int jahr, int monat);
+    Task<List<UserReportSummaryDTO>> GetMonthlySummaryAsync(int jahr, int monat);
+
 }
 
