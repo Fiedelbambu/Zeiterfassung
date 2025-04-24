@@ -18,5 +18,14 @@ namespace IST.Zeiterfassung.Persistence.Repositories
             await _context.LoginAudits.AddAsync(eintrag);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<LoginAudit>> GetAllAsync()
+        {
+            return await _context.LoginAudits
+                .Include(l => l.User)
+                .OrderByDescending(l => l.Zeitpunkt)
+                .ToListAsync();
+        }
+
+
     }
 }

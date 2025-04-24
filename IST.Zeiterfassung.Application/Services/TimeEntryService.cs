@@ -1,7 +1,10 @@
-﻿using IST.Zeiterfassung.Application.DTOs.TimeEntry;
+﻿using System;
+using IST.Zeiterfassung.Application.DTOs.TimeEntry;
 using IST.Zeiterfassung.Application.Interfaces;
 using IST.Zeiterfassung.Application.Results;
 using IST.Zeiterfassung.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
 
 
 namespace IST.Zeiterfassung.Application.Services;
@@ -9,7 +12,7 @@ namespace IST.Zeiterfassung.Application.Services;
 public class TimeEntryService : ITimeEntryService
 {
     private readonly ITimeEntryRepository _repository;
-
+    
     public TimeEntryService(ITimeEntryRepository repository)
     {
         _repository = repository;
@@ -98,4 +101,25 @@ public class TimeEntryService : ITimeEntryService
             NettoDauer = entry.NettoDauer
         };
     }
+
+    public async Task<List<TimeEntry>> GetAllAsync(DateOnly? from = null, DateOnly? to = null)
+    {
+        var all = await _repository.GetAllAsync();
+
+        if (from.HasValue)
+            all = all.Where(t => DateOnly.FromDateTime(t.Start) >= from.Value).ToList();
+
+        if (to.HasValue)
+            all = all.Where(t => DateOnly.FromDateTime(t.Ende) <= to.Value).ToList();
+
+        return all;
+    }
+
+    public async Task<Result<List<TimeEntryResponseDTO>>> GetFilteredAsync(DateTime? from, DateTime? to, Guid? userId)
+    {
+        var entries = await _repository.GetFilteredAsync(from, to, userId);
+        var dtoList = entries.Select(MapToDTO).ToList();
+        return Result<List<TimeEntryResponseDTO>>.Ok(dtoList);
+    }
+
 }

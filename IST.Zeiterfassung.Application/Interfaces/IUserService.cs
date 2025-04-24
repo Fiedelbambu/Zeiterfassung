@@ -15,17 +15,18 @@ namespace IST.Zeiterfassung.Application.Interfaces
         Task<Result<UserResponseDTO>> RegisterAsync(RegisterUserDTO dto);
 
         //    Task<Result<UserResponseDTO>> LoginAsync(LoginUserDTO dto);
-        Task<Result<User>> LoginAsync(LoginUserDTO dto);
+        Task<Result<User>> LoginAsync(LoginUserDTO dto, HttpContext context);
         Task<List<UserResponseDTO>> GetAllAsync();
         Task<Result<UserResponseDTO>> GetByIdAsync(Guid id);
         Task<Result<string>> ChangePasswordAsync(Guid userId, ChangePasswordDTO dto);
         Task<Result<string>> ChangeRoleAsync(Guid userId, ChangeUserRoleDTO dto);
         Task<Result<string>> ToggleAktivAsync(Guid userId);
-        Task<Result<User>> LoginByNfcAsync(string uid);
-        Task<Result<User>> LoginByQrAsync(string token);
+        Task<Result<User>> LoginByNfcAsync(string uid, HttpContext context);
+        Task<Result<User>> LoginByQrAsync(string token, HttpContext context);
         Task<List<UserListItemDTO>> GetAllUsersAsync();
         Task<Result<string>> SetNfcIdAsync(Guid userId, SetNfcIdDTO dto);
         Task<Result<string>> SetQrTokenAsync(Guid userId, SetQrTokenDTO dto);
+        Task<Result<string>> SetZeitmodellAsync(Guid userId, SetZeitmodellDTO dto);
 
 
     }

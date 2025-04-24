@@ -7,5 +7,7 @@ public class UserListItemDTO
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = "Mitarbeiter";
     public bool Aktiv { get; set; }
+    public Guid? ZeitmodellId { get; set; }
+
     public DateTime ErstelltAm { get; set; }
 }

@@ -1,6 +1,9 @@
 ﻿using Xunit;
 using Moq;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+
 using IST.Zeiterfassung.Application.Services;
 using IST.Zeiterfassung.Application.DTOs.User;
 using IST.Zeiterfassung.Application.Interfaces;
@@ -12,12 +15,21 @@ namespace IST.Zeiterfassung.Tests.Services;
 public class UserServiceAdminTests
 {
     private readonly Mock<IUserRepository> _userRepoMock;
+    private readonly Mock<IZeitmodellRepository> _zeitmodellRepoMock;
+    private readonly Mock<ILoginAuditRepository> _auditRepoMock;
     private readonly UserService _service;
 
     public UserServiceAdminTests()
     {
         _userRepoMock = new Mock<IUserRepository>();
-        _service = new UserService(_userRepoMock.Object);
+        _zeitmodellRepoMock = new Mock<IZeitmodellRepository>();
+        _auditRepoMock = new Mock<ILoginAuditRepository>();
+
+        _service = new UserService(
+            _userRepoMock.Object,
+            _zeitmodellRepoMock.Object,
+            _auditRepoMock.Object
+        );
     }
 
     [Fact]
@@ -94,5 +106,20 @@ public class UserServiceAdminTests
         user.QrToken.Should().BeNull();
         user.QrTokenExpiresAt.Should().BeNull();
         _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginByNfcAsync_Should_LogAttempt_And_Fail_IfUserNotFound()
+    {
+        var uid = "00:11:22:33";
+        _userRepoMock.Setup(r => r.GetByNfcUidAsync(uid)).ReturnsAsync((User?)null);
+
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = IPAddress.Loopback;
+
+        var result = await _service.LoginByNfcAsync(uid, context);
+
+        result.Success.Should().BeFalse();
+        _auditRepoMock.Verify(a => a.AddAsync(It.IsAny<LoginAudit>()), Times.Once);
     }
 }

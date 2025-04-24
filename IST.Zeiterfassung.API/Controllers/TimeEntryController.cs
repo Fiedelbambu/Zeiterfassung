@@ -1,5 +1,6 @@
 ﻿using IST.Zeiterfassung.Application.DTOs.TimeEntry;
 using IST.Zeiterfassung.Application.Interfaces;
+using IST.Zeiterfassung.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -12,7 +13,7 @@ namespace IST.Zeiterfassung.API.Controllers;
 public class TimeEntryController : ControllerBase
 {
     private readonly ITimeEntryService _service;
-
+     
     public TimeEntryController(ITimeEntryService service)
     {
         _service = service;
@@ -70,4 +71,15 @@ public class TimeEntryController : ControllerBase
 
         return Ok(new { message = result.Value });
     }
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllFiltered([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] Guid? userId)
+    {
+        var result = await _service.GetFilteredAsync(from, to, userId);
+        if (!result.Success)
+            return BadRequest(new { message = result.ErrorMessage });
+
+        return Ok(result.Value);
+    }
+
 }

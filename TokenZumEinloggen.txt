@@ -1,0 +1,11 @@
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNTNlNDUyYS00ODE2LTRhMWEtYjM1Zi01NWQwYWFhMWZjNjUiLCJ1bmlxdWVfbmFtZSI6WyJhZG1pbiIsImFkbWluIl0sImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDUyNDMyNzksInJvbGUiOiJBZG1pbiIsIm5hbWVpZCI6IjA1M2U0NTJhLTQ4MTYtNGExYS1iMzVmLTU1ZDBhYWExZmM2NSIsIm5iZiI6MTc0NTI0MzI3OSwiZXhwIjoxNzQ1MjQ2ODc5LCJpc3MiOiJJU1QuWmVpdGVyZmFzc3VuZyIsImF1ZCI6IklTVC5aZWl0ZXJmYXNzdW5nLkNsaWVudCJ9.a_nVwu3shyoZ9-x3isZC1NJzYf4yrznWvQX2SS6Kf2Y",
+  "user": {
+    "id": "053e452a-4816-4a1a-b35f-55d0aaa1fc65",
+    "username": "admin",
+    "email": "admin@example.com",
+    "role": 0,
+    "qrToken": null,
+    "qrTokenExpiresAt": null
+  }
+}

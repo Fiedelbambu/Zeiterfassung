@@ -29,16 +29,7 @@ namespace IST.Zeiterfassung.API.Controllers
             return Ok(users);
         }
 
-        /// <summary>
-        /// Gibt alle verfügbaren Benutzerrollen zurück.
-        /// </summary>
-        [HttpGet("roles")]
-        public IActionResult GetRoles()
-        {
-            var rollen = Enum.GetNames(typeof(Role));
-            return Ok(rollen);
-        }
-
+        
 
         /// <summary>
         /// Weist einem Benutzer eine NFC-ID zu (z. B. für Terminal oder Chipkarte).
@@ -67,5 +58,45 @@ namespace IST.Zeiterfassung.API.Controllers
 
             return Ok(new { message = result.Value });
         }
+
+        [HttpGet("no-time-model")]
+        public async Task<IActionResult> GetUsersWithoutTimeModel()
+        {
+            var users = await _userService.GetAllUsersAsync();
+
+            var result = users
+                .Where(u => u.ZeitmodellId == null)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.Role
+                })
+                .ToList();
+
+            return Ok(result);
+        }
+        [HttpPut("{id}/zeitmodell")]
+        public async Task<IActionResult> SetZeitmodell(Guid id, [FromBody] SetZeitmodellDTO dto)
+        {
+            var result = await _userService.SetZeitmodellAsync(id, dto);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok(new { message = result.Value });
+        }
+        [HttpGet("roles")]
+        public IActionResult GetAllRoles()
+        {
+            var rollen = Enum.GetValues(typeof(Role))
+                .Cast<Role>()
+                .Select(r => new { Wert = (int)r, Name = r.ToString() })
+                .ToList();
+
+            return Ok(rollen);
+        }
+
     }
- }
+}

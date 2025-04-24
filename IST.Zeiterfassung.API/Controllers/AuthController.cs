@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUserDTO dto)
     {
-        var result = await _userService.LoginAsync(dto);
+        var result = await _userService.LoginAsync(dto, HttpContext);
 
         // Audit-Datensatz vorbereiten
         var audit = new LoginAudit
@@ -95,17 +95,7 @@ public class AuthController : ControllerBase
     [HttpPost("nfc")]
     public async Task<IActionResult> NfcLogin([FromBody] NfcLoginDTO dto)
     {
-        var result = await _userService.LoginByNfcAsync(dto.Uid);
-
-        var audit = new LoginAudit
-        {
-            LoginMethod = LoginMethod.NFC,
-            Erfolgreich = result.Success,
-            IPAdresse = HttpContext.Connection.RemoteIpAddress?.ToString(),
-            Ort = "NFC-Terminal",
-            UserId = result.Success ? result.Value!.Id : null
-        };
-        await _loginAuditRepository.AddAsync(audit);
+        var result = await _userService.LoginByNfcAsync(dto.Uid, HttpContext);
 
         if (!result.Success)
             return Unauthorized(new { message = result.ErrorMessage });
@@ -130,7 +120,7 @@ public class AuthController : ControllerBase
     [HttpPost("qr")]
     public async Task<IActionResult> QrLogin([FromBody] QrLoginDTO dto)
     {
-        var result = await _userService.LoginByQrAsync(dto.Token);
+        var result = await _userService.LoginByQrAsync(dto.Token, HttpContext);
 
         var audit = new LoginAudit
         {

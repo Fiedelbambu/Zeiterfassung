@@ -40,8 +40,6 @@ public class TimeEntryRepository : ITimeEntryRepository
         await _context.SaveChangesAsync();
     }
 
-
-
     public async Task DeleteAsync(TimeEntry entry)
     {
         _context.TimeEntries.Remove(entry);
@@ -69,5 +67,32 @@ public class TimeEntryRepository : ITimeEntryRepository
             .ToListAsync();
     }
 
+    public async Task<List<TimeEntry>> GetAllAsync()
+    {
+        return await _context.TimeEntries
+            .Include(t => t.Betroffener) // falls du auch den User brauchst
+            .OrderByDescending(t => t.Start)
+            .ToListAsync();
+    }
+
+    public async Task<List<TimeEntry>> GetFilteredAsync(DateTime? from, DateTime? to, Guid? userId)
+    {
+        var query = _context.TimeEntries.Include(t => t.Betroffener).AsQueryable();
+
+        if (from.HasValue)
+            query = query.Where(t => t.Start >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(t => t.Start <= to.Value);
+
+        if (userId.HasValue)
+            query = query.Where(t => t.ErfasstFürUserId == userId.Value);
+
+        return await query
+        .Include(e => e.Betroffener) // falls du Benutzername brauchst
+        .OrderBy(e => e.Start)
+        .ToListAsync();
+
+    }
 
 }

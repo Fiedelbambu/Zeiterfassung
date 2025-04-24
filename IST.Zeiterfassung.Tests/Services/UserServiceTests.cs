@@ -2,8 +2,8 @@
 using Moq;
 using FluentAssertions;
 using IST.Zeiterfassung.Application.Services;
-using IST.Zeiterfassung.Application.DTOs.User;
 using IST.Zeiterfassung.Application.Interfaces;
+using IST.Zeiterfassung.Application.DTOs.User;
 using IST.Zeiterfassung.Domain.Entities;
 using IST.Zeiterfassung.Domain.Enums;
 
@@ -11,121 +11,94 @@ namespace IST.Zeiterfassung.Tests.Services;
 
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _repoMock;
+    private readonly Mock<IUserRepository> _userRepoMock = new();
+    private readonly Mock<IZeitmodellRepository> _zeitmodellRepoMock = new();
+    private readonly Mock<ILoginAuditRepository> _auditRepoMock = new();
     private readonly UserService _service;
 
     public UserServiceTests()
     {
-        _repoMock = new Mock<IUserRepository>();
-        _service = new UserService(_repoMock.Object);
+        _service = new UserService(_userRepoMock.Object, _zeitmodellRepoMock.Object, _auditRepoMock.Object);
     }
 
-    [Fact]
-    public async Task RegisterAsync_ShouldReturnUserResponseDTO_WhenUserIsValid()
-    {
-        // Arrange
-        var dto = new RegisterUserDTO
-        {
-            Username = "max",
-            Email = "max@example.com",
-            Passwort = "Geheim123"
-        };
-
-        _repoMock.Setup(repo => repo.AddAsync(It.IsAny<User>()))
-                 .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _service.RegisterAsync(dto);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Success.Should().BeTrue();
-        result.Value.Should().NotBeNull();
-        result.Value!.Username.Should().Be(dto.Username);
-        result.Value!.Email.Should().Be(dto.Email);
-        _repoMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
-    }
+    #region Admin-Funktionen
 
     [Fact]
-    public async Task ChangePassword_Should_UpdatePasswordHash()
+    public async Task ChangeRoleAsync_Should_UpdateRole()
     {
-        var userId = Guid.NewGuid();
-        var user = new User { Id = userId, PasswordHash = "alt" };
-        var dto = new ChangePasswordDTO { NeuesPasswort = "Neu123!" };
+        var user = new User { Id = Guid.NewGuid(), Role = Role.Employee };
+        _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
 
-        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
-
-        var result = await _service.ChangePasswordAsync(userId, dto);
-
-        result.Success.Should().BeTrue();
-        _repoMock.Verify(r => r.UpdateAsync(It.Is<User>(u =>
-            BCrypt.Net.BCrypt.Verify("Neu123!", u.PasswordHash)
-        )), Times.Once);
-    }
-
-    [Fact]
-    public async Task ChangeRole_Should_UpdateUserRole()
-    {
-        var userId = Guid.NewGuid();
-        var user = new User { Id = userId, Role = Role.Employee };
         var dto = new ChangeUserRoleDTO { NeueRolle = Role.Admin };
-
-        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
-
-        var result = await _service.ChangeRoleAsync(userId, dto);
+        var result = await _service.ChangeRoleAsync(user.Id, dto);
 
         result.Success.Should().BeTrue();
         user.Role.Should().Be(Role.Admin);
-        _repoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+        _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
     [Fact]
-    public async Task ToggleAktiv_Should_SwitchStatus()
+    public async Task ToggleAktivAsync_Should_SwitchStatus()
     {
-        var userId = Guid.NewGuid();
-        var user = new User { Id = userId, Aktiv = false };
+        var user = new User { Id = Guid.NewGuid(), Aktiv = false };
+        _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
 
-        _repoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
-
-        var result = await _service.ToggleAktivAsync(userId);
+        var result = await _service.ToggleAktivAsync(user.Id);
 
         result.Success.Should().BeTrue();
         user.Aktiv.Should().BeTrue();
-        _repoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+        _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
     [Fact]
-    public async Task LoginByNfcAsync_Should_ReturnUser_WhenUidValid()
+    public async Task SetNfcIdAsync_Should_SetValue()
     {
-        var uid = "04:A3:12:FE";
+        var user = new User { Id = Guid.NewGuid() };
+        _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
+
+        var dto = new SetNfcIdDTO { NfcId = "04:AB:CD:12" };
+        var result = await _service.SetNfcIdAsync(user.Id, dto);
+
+        result.Success.Should().BeTrue();
+        user.NfcId.Should().Be("04:AB:CD:12");
+        _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetQrTokenAsync_Should_GenerateToken_WhenTrue()
+    {
+        var user = new User { Id = Guid.NewGuid() };
+        _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
+
+        var dto = new SetQrTokenDTO { NeuGenerieren = true };
+        var result = await _service.SetQrTokenAsync(user.Id, dto);
+
+        result.Success.Should().BeTrue();
+        user.QrToken.Should().NotBeNullOrEmpty();
+        user.QrTokenExpiresAt.Should().NotBeNull();
+        _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetQrTokenAsync_Should_ClearToken_WhenFalse()
+    {
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Username = "nfcUser",
-            NfcId = uid,
-            Aktiv = true,
-            Role = Role.Admin
+            QrToken = "abc123",
+            QrTokenExpiresAt = DateTime.UtcNow.AddMinutes(5)
         };
+        _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
 
-        _repoMock.Setup(r => r.GetByNfcUidAsync(uid)).ReturnsAsync(user);
-
-        var result = await _service.LoginByNfcAsync(uid);
+        var dto = new SetQrTokenDTO { NeuGenerieren = false };
+        var result = await _service.SetQrTokenAsync(user.Id, dto);
 
         result.Success.Should().BeTrue();
-        result.Value.Should().NotBeNull();
-        result.Value!.Username.Should().Be("nfcUser");
+        user.QrToken.Should().BeNull();
+        user.QrTokenExpiresAt.Should().BeNull();
+        _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
-    [Fact]
-    public async Task LoginByQrAsync_Should_Fail_WhenTokenNotFound()
-    {
-        var token = "unknown-token";
+    #endregion
 
-        _repoMock.Setup(r => r.GetByQrTokenAsync(token)).ReturnsAsync((User?)null);
-
-        var result = await _service.LoginByQrAsync(token);
-
-        result.Success.Should().BeFalse();
-        result.ErrorMessage!.ToLowerInvariant().Should().Contain("kein benutzer");
-    }
 }

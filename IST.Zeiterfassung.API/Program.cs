@@ -1,6 +1,7 @@
 ﻿using BCrypt.Net;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using IST.Zeiterfassung.API.Middleware;
 using IST.Zeiterfassung.Application.Interfaces;
 using IST.Zeiterfassung.Application.Services;
 using IST.Zeiterfassung.Application.Settings;
@@ -17,34 +18,29 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Datenbank-Konfiguration (SQLite)
+// Datenbank (SQLite)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Feiertage abrufen und lokal cachen
+// HTTP Client für Feiertagsservice
 builder.Services.AddHttpClient<IFeiertagsService, FeiertagsService>();
 
-
-// Dependency Injection für Services & Repositories
+// Repositories & Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IFeiertagRepository, FeiertagRepository>(); // ✅ HIER NEU
-builder.Services.AddScoped<FeiertagsImportService>();
 builder.Services.AddScoped<ILoginAuditRepository, LoginAuditRepository>();
+builder.Services.AddScoped<IZeitmodellRepository, ZeitmodellRepository>();
+builder.Services.AddScoped<IFeiertagRepository, FeiertagRepository>();
+builder.Services.AddScoped<FeiertagsImportService>();
 
-// Controller + FluentValidation registrieren
+// FluentValidation
 builder.Services.AddFluentValidationAutoValidation()
                 .AddFluentValidationClientsideAdapters();
-
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserValidator>();
 
-builder.Services.AddControllers(); // 
-
-// Swagger für OpenAPI Dokumentation
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -52,14 +48,22 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
+// CORS – Muss vor Build()
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
-
-
-
-// JWT-Konfiguration (muss VOR builder.Build() passieren)
+// JWT Auth
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSection);
-
 var jwtSettings = jwtSection.Get<JwtSettings>();
 var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
@@ -83,10 +87,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization(); // ✅ HIER ergänzen
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 var app = builder.Build();
 
-// Admin-Benutzer beim Start anlegen
+// Admin-Account anlegen
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -117,11 +122,13 @@ using (var scope = app.Services.CreateScope())
 
 // Middleware
 app.UseHttpsRedirection();
+app.UseMiddleware<ApiLoggingMiddleware>();
 app.UseAuthentication();
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
+app.UseDeveloperExceptionPage();
 
-
-
+// Swagger UI
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

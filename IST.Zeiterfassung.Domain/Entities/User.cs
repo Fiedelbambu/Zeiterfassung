@@ -12,7 +12,7 @@ namespace IST.Zeiterfassung.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public LoginMethod LoginMethoden { get; set; } = LoginMethod.Passwort;
-
+        public Guid? ZeitmodellId { get; set; }
         public Role Role { get; set; } = Role.Employee;
         public string FeiertagsRegion { get; set; } = "AT"; // Standard: Österreich
         public bool Aktiv { get; set; } = true;
