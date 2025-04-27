@@ -5,18 +5,22 @@ namespace IST.Zeiterfassung.Domain.Entities;
 
 public class Absence
 {
-    [ForeignKey(nameof(UserId))]
-    public User? User { get; set; }
-
     public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+
+    public Guid UserId { get; set; } // ➔ FK zuerst deklarieren!
+
+    [ForeignKey(nameof(UserId))]
+    public User User { get; set; } = null!; // ➔ Navigation Property (Required)
+
     public AbsenceType Typ { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public AbsenceStatus Status { get; set; }
     public string? Kommentar { get; set; }
     public DateTime ErstelltAm { get; set; }
+
     public TimeSpan Dauer => EndDate - StartDate;
+
     public Absence() { }
 
     public Absence(Guid userId, AbsenceType typ, DateTime startDate, DateTime endDate, string? kommentar = null)
@@ -28,8 +32,6 @@ public class Absence
         EndDate = endDate;
         Kommentar = kommentar;
         ErstelltAm = DateTime.UtcNow;
-
-        // Hier setzen wir den Initialstatus explizit, auch wenn ein Konstruktor mit Parametern verwendet wird
         Status = AbsenceStatus.Beantragt;
     }
 
@@ -38,13 +40,4 @@ public class Absence
         get => Kommentar;
         set => Kommentar = value;
     }
-
 }
-
-
-
-
-
-
-
-

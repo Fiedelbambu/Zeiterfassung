@@ -29,7 +29,20 @@ namespace IST.Zeiterfassung.API.Controllers
             return Ok(users);
         }
 
-        
+        /// <summary>
+        /// Erstellt einen neuen Benutzer (nur für Admins).
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
+        {
+            var result = await _userService.CreateAsync(dto);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok(result.Value);
+        }
+
 
         /// <summary>
         /// Weist einem Benutzer eine NFC-ID zu (z. B. für Terminal oder Chipkarte).

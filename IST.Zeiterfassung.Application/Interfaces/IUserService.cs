@@ -27,7 +27,8 @@ namespace IST.Zeiterfassung.Application.Interfaces
         Task<Result<string>> SetNfcIdAsync(Guid userId, SetNfcIdDTO dto);
         Task<Result<string>> SetQrTokenAsync(Guid userId, SetQrTokenDTO dto);
         Task<Result<string>> SetZeitmodellAsync(Guid userId, SetZeitmodellDTO dto);
-
+        Task<Result<UserResponseDTO>> CreateAsync(CreateUserDTO dto);
+        
 
     }
 }

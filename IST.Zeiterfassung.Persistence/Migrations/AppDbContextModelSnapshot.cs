@@ -183,7 +183,14 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmployeeNumber")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -194,6 +201,10 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("LetzteErfassung")
                         .HasColumnType("TEXT");
 
@@ -201,9 +212,6 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("LoginMethode")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("LoginMethoden")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("NfcId")
@@ -224,6 +232,9 @@ namespace IST.Zeiterfassung.Persistence.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ZeitmodellId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

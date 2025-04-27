@@ -50,7 +50,7 @@ public class UserService : IUserService
             Id = user.Id,
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role.ToString()
         };
 
         return Result<UserResponseDTO>.Ok(response);
@@ -114,26 +114,15 @@ public class UserService : IUserService
         {
             Id = u.Id,
             Username = u.Username,
+            LastName = u.LastName,
+            BirthDate = u.BirthDate,
             Email = u.Email,
-            Role = u.Role
+            EmployeeNumber = u.EmployeeNumber,
+            Role = u.Role.ToString(),
+            IsActive = u.Aktiv
         }).ToList();
     }
 
-    public async Task<Result<UserResponseDTO>> GetByIdAsync(Guid id)
-    {
-        var user = await _userRepository.GetByIdAsync(id);
-
-        if (user is null)
-            return Result<UserResponseDTO>.Fail("Benutzer nicht gefunden.");
-
-        return Result<UserResponseDTO>.Ok(new UserResponseDTO
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        });
-    }
 
     public async Task<Result<string>> ChangePasswordAsync(Guid userId, ChangePasswordDTO dto)
     {
@@ -288,6 +277,62 @@ public class UserService : IUserService
         await _userRepository.UpdateAsync(user);
 
         return Result<string>.Ok("Zeitmodell wurde zugewiesen.");
+    }
+
+    public async Task<Result<UserResponseDTO>> GetByIdAsync(Guid id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user is null)
+            return Result<UserResponseDTO>.Fail("Benutzer nicht gefunden.");
+
+        return Result<UserResponseDTO>.Ok(new UserResponseDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            LastName = user.LastName,
+            Email = user.Email,
+            BirthDate = user.BirthDate,
+            EmployeeNumber = user.EmployeeNumber,
+            Role = user.Role.ToString(),
+            IsActive = user.Aktiv
+        });
+    }
+    public async Task<Result<UserResponseDTO>> CreateAsync(CreateUserDTO dto)
+    {
+        var existingUser = await _userRepository.GetByUsernameAsync(dto.Name);
+        if (existingUser != null)
+        {
+            return Result<UserResponseDTO>.Fail("Benutzername ist bereits vergeben.");
+        }
+
+        var newUser = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = dto.Name,
+            LastName = dto.LastName,
+            BirthDate = dto.BirthDate,
+            EmployeeNumber = dto.EmployeeNumber,
+            Email = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            Role = Enum.TryParse<Role>(dto.Role, out var parsedRole) ? parsedRole : Role.Employee,
+            Aktiv = dto.IsActive,
+            ErstelltAm = DateTime.UtcNow
+        };
+
+        await _userRepository.AddAsync(newUser);
+
+        return Result<UserResponseDTO>.Ok(new UserResponseDTO
+        {
+            Id = newUser.Id,
+            Username = newUser.Username,
+            LastName = newUser.LastName,
+            BirthDate = newUser.BirthDate,
+            Email = newUser.Email,
+            EmployeeNumber = newUser.EmployeeNumber,
+            Role = newUser.Role.ToString(),
+            IsActive = newUser.Aktiv
+        });
     }
 
 

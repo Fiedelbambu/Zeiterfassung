@@ -60,7 +60,8 @@ public class AuthController : ControllerBase
             Id = result.Value!.Id,
             Username = result.Value.Username,
             Email = result.Value.Email,
-            Role = result.Value.Role
+            Role = result.Value.Role.ToString(),
+          
         };
 
         return Ok(new

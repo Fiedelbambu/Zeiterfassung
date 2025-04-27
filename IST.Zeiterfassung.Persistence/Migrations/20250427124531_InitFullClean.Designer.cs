@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250420183119_Add_FeiertagsRegion_To_User")]
-    partial class Add_FeiertagsRegion_To_User
+    [Migration("20250427124531_InitFullClean")]
+    partial class InitFullClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,13 +26,13 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Bis")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("ErfasstAm")
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kommentar")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Reason")
@@ -41,18 +41,23 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Typ")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Von")
+                    b.Property<Guid?>("UserId1")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Absences");
                 });
@@ -69,6 +74,10 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.Property<bool>("IstArbeitsfrei")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Kommentar")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -82,6 +91,37 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.ToTable("Feiertage");
                 });
 
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.LoginAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Erfolgreich")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("IPAdresse")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LoginMethod")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Ort")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Zeitpunkt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LoginAudits");
+                });
+
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.TimeEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -89,6 +129,9 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Beschreibung")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Ende")
@@ -143,7 +186,14 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmployeeNumber")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -154,8 +204,30 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LetzteErfassung")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LetzterLoginOrt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LoginMethode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("NfcId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QrToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("QrTokenExpiresAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Role")
@@ -163,6 +235,9 @@ namespace IST.Zeiterfassung.Persistence.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ZeitmodellId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -203,10 +278,23 @@ namespace IST.Zeiterfassung.Persistence.Migrations
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.Absence", b =>
                 {
                     b.HasOne("IST.Zeiterfassung.Domain.Entities.User", "User")
-                        .WithMany("Absences")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("IST.Zeiterfassung.Domain.Entities.User", null)
+                        .WithMany("Absences")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.LoginAudit", b =>
+                {
+                    b.HasOne("IST.Zeiterfassung.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
