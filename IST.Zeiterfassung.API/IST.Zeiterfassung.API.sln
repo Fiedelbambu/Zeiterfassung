@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IST.Zeiterfassung.Tests", "
 		{B38E1A70-6150-E24D-4CC0-CA7A72B6DE8E} = {B38E1A70-6150-E24D-4CC0-CA7A72B6DE8E}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend_React", "Frontend_React", "{83A6BDCD-5633-479B-BB93-06A092F2EE2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

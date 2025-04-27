@@ -33,10 +33,11 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Username = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false, defaultValue: ""),
                     LastName = table.Column<string>(type: "TEXT", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     EmployeeNumber = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: true),
                     PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
                     Role = table.Column<int>(type: "INTEGER", nullable: false),
                     Aktiv = table.Column<bool>(type: "INTEGER", nullable: false),

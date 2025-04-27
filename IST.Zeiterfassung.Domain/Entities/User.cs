@@ -9,6 +9,7 @@ namespace IST.Zeiterfassung.Domain.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Username { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;       // Vorname (Klarname)
         public string LastName { get; set; } = string.Empty;            // Nachname neu
         public DateTime? BirthDate { get; set; }                         // Geburtsdatum neu
         public string EmployeeNumber { get; set; } = string.Empty;       // Mitarbeitnummer neu

@@ -310,6 +310,7 @@ public class UserService : IUserService
         {
             Id = Guid.NewGuid(),
             Username = dto.Name,
+            Name = dto.Name,
             LastName = dto.LastName,
             BirthDate = dto.BirthDate,
             EmployeeNumber = dto.EmployeeNumber,
