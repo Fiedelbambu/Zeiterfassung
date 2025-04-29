@@ -8,6 +8,10 @@ public class UserListItemDTO
     public string Role { get; set; } = "Mitarbeiter";
     public bool Aktiv { get; set; }
     public Guid? ZeitmodellId { get; set; }
-
     public DateTime ErstelltAm { get; set; }
+
+    public string? Name { get; set; }
+    public string? LastName { get; set; }
+    public string? EmployeeNumber { get; set; }
+    public DateTime? BirthDate { get; set; }
 }

@@ -111,5 +111,21 @@ namespace IST.Zeiterfassung.API.Controllers
             return Ok(rollen);
         }
 
+        /// <summary>
+        /// Aktualisiert die allgemeinen Daten eines Benutzers.
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDTO dto)
+        {
+            var result = await _userService.UpdateUserAsync(id, dto);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok(new { message = "Benutzer erfolgreich aktualisiert." });
+        }
+
+
+
     }
 }

@@ -8,6 +8,14 @@
 	<NoWarn>$(NoWarn);1591</NoWarn>  
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
   <ItemGroup>
 	<PackageReference Include="FluentAssertions" Version="8.2.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />

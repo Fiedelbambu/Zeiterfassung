@@ -1,51 +1,45 @@
-// src/components/CreateUserModal.tsx
+// src/components/EditUserModal.tsx
 
-import { useState, useEffect } from 'react';
-import { getToken } from '../utils/auth'; // Token-Helper
+import { useState } from 'react';
+import { getToken } from '../utils/auth';
 
-interface CreateUserModalProps {
+interface User {
+  id: string;
+  username: string;
+  name: string;
+  lastName: string;
+  email: string | null;
+  role: string;
+  employeeNumber: string | null;
+  birthDate: string;
+  aktiv: boolean;
+  erstelltAm: string;
+}
+
+interface EditUserModalProps {
+  user: User;
   onClose: () => void;
 }
 
-function generateRandomPassword(length = 12) {
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += charset[Math.floor(Math.random() * charset.length)];
-  }
-  return password;
-}
-
-export default function CreateUserModal({ onClose }: CreateUserModalProps) {
-  const [username, setUsername] = useState('');
-  const [name, setName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('Employee');
-  const [passwort, setPasswort] = useState('');
-  const [employeeNumber, setEmployeeNumber] = useState('');
-  const [isActive, setIsActive] = useState(true);
-  const [birthDate, setBirthDate] = useState('');
+export default function EditUserModal({ user, onClose }: EditUserModalProps) {
+  const [name, setName] = useState(user.name);
+  const [lastName, setLastName] = useState(user.lastName);
+  const [email, setEmail] = useState(user.email ?? '');
+  const [role, setRole] = useState(user.role);
+  const [birthDate, setBirthDate] = useState(user.birthDate ? user.birthDate.substring(0, 10) : '');
+  const [employeeNumber, setEmployeeNumber] = useState(user.employeeNumber ?? '');
+  const [isActive, setIsActive] = useState(user.aktiv);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    setPasswort(generateRandomPassword(12));
-  }, []);
-
-  const handleGenerateNewPassword = () => {
-    setPasswort(generateRandomPassword(12));
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const formattedBirthDate = new Date(birthDate).toISOString().split('T')[0];
 
     try {
-      const response = await fetch('https://localhost:7123/api/User', {
-        method: 'POST',
+      const response = await fetch(`https://localhost:7123/api/UserAdmin/${user.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${getToken()}`
@@ -53,27 +47,30 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
         body: JSON.stringify({
           name,
           lastName,
-          birthDate: formattedBirthDate,
-          username,
           email,
           role,
-          passwort,
+          birthDate,
           employeeNumber,
-          isActive
+          aktiv: isActive
         })
       });
-     
-  
 
       if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || 'Fehler beim Erstellen.');
+        let errorMessage = 'Fehler beim Speichern.';
+        try {
+          const result = await response.json();
+          errorMessage = result.message || errorMessage;
+        } catch (err) {
+          // Keine JSON-Antwort vorhanden → nichts tun, Standard-Fehlermeldung behalten
+        }
+        throw new Error(errorMessage);
       }
+      
 
-      alert('Benutzer erfolgreich erstellt.');
+      alert('Benutzerdaten erfolgreich aktualisiert.');
       onClose();
     } catch (err: any) {
-      console.error('Fehler beim Erstellen:', err);
+      console.error('Fehler beim Aktualisieren:', err);
       setError(err.message || 'Unbekannter Fehler.');
     } finally {
       setLoading(false);
@@ -83,7 +80,7 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Benutzer erstellen</h2>
+        <h2 className="text-xl font-bold mb-4">Benutzer bearbeiten</h2>
 
         {error && (
           <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">
@@ -91,16 +88,15 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
           </div>
         )}
 
-        <form onSubmit={handleCreate} className="space-y-4">
-          {/* Benutzername */}
-            <div>
+        <form onSubmit={handleSave} className="space-y-4">
+          {/* Benutzername (nur Anzeige) */}
+          <div>
             <label className="block mb-1 font-medium">Benutzername</label>
             <input
               type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              value={user.username}
+              disabled
+              className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100"
             />
           </div>
 
@@ -159,7 +155,6 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="Optional"
             />
           </div>
 
@@ -174,29 +169,6 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
               <option value="Employee">Mitarbeiter</option>
               <option value="Admin">Admin</option>
             </select>
-          </div>
-
-          {/* Passwort */}
-          <div>
-            <label className="block mb-1 font-medium">Generiertes Passwort</label>
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={passwort}
-                readOnly
-                className="flex-1 border border-gray-300 rounded px-3 py-2 bg-gray-100"
-              />
-              <button
-                type="button"
-                onClick={handleGenerateNewPassword}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded"
-              >
-                Neu
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Bitte Passwort kopieren und dem Benutzer mitteilen.
-            </p>
           </div>
 
           {/* Aktiv/Inaktiv */}
@@ -228,7 +200,7 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
               disabled={loading}
               className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
             >
-              {loading ? 'Speichern...' : 'Benutzer speichern'}
+              {loading ? 'Speichern...' : 'Änderungen speichern'}
             </button>
           </div>
         </form>

@@ -1,10 +1,37 @@
 // src/pages/UsersPage.tsx
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import UserTable from '../components/UserTable';
 import CreateUserModal from '../components/CreateUserModal';
+import EditUserModal from '../components/EditUserModal'; 
+
+interface User {
+  id: string;
+  username: string;
+  name: string;
+  lastName: string;
+  email: string | null;
+  role: string;
+  employeeNumber: string | null;
+  birthDate: string;
+  aktiv: boolean;
+  erstelltAm: string;
+}
 
 export default function UsersPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null); // User, den wir bearbeiten wollen
+  const reloadUsersRef = useRef<() => void>(() => {});
+  
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingUser(null);
+    if (reloadUsersRef.current) {
+      reloadUsersRef.current(); //  Tabelle neu laden
+    }
+  };
 
   return (
     <div className="p-8 overflow-y-auto max-h-[90vh]">
@@ -18,10 +45,22 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <UserTable />
+      <UserTable onEditUser={handleEditUser} reloadRef={reloadUsersRef} />
 
       {showCreateModal && (
-        <CreateUserModal onClose={() => setShowCreateModal(false)} />
+  <CreateUserModal
+    onClose={() => {
+      setShowCreateModal(false);
+      if (reloadUsersRef.current) {
+        reloadUsersRef.current(); //  Tabelle neu laden
+      }
+    }}
+  />
+)}
+
+
+      {editingUser && (
+        <EditUserModal user={editingUser} onClose={handleCloseEditModal} />
       )}
     </div>
   );

@@ -218,10 +218,15 @@ public class UserService : IUserService
         {
             Id = u.Id,
             Username = u.Username,
-            Email = u.Email,
+            Email = u.Email ?? string.Empty,
             Role = u.Role.ToString(),
             Aktiv = u.Aktiv,
-            ErstelltAm = u.ErstelltAm
+            ErstelltAm = u.ErstelltAm,
+            ZeitmodellId = u.ZeitmodellId,                        
+            Name = u.Name,
+            LastName = u.LastName,
+            EmployeeNumber = u.EmployeeNumber,
+            BirthDate = u.BirthDate
         }).ToList();
     }
 
@@ -335,6 +340,44 @@ public class UserService : IUserService
             IsActive = newUser.Aktiv
         });
     }
+    public async Task<Result<UserResponseDTO>> UpdateUserAsync(Guid id, UpdateUserDTO dto)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            return Result<UserResponseDTO>.Fail("Benutzer nicht gefunden.");
+
+        user.Name = dto.Name;
+        user.LastName = dto.LastName;
+        user.Email = dto.Email;
+        user.EmployeeNumber = dto.EmployeeNumber;
+        user.BirthDate = DateTime.Parse(dto.BirthDate);
+        user.Aktiv = dto.Aktiv;
+
+        if (!Enum.TryParse<Role>(dto.Role, out var parsedRole))
+            return Result<UserResponseDTO>.Fail("Ungültige Rolle übergeben.");
+
+        user.Role = parsedRole;
+
+        await _userRepository.UpdateAsync(user);
+
+        var response = new UserResponseDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Name = user.Name,
+            LastName = user.LastName,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            EmployeeNumber = user.EmployeeNumber,
+            IsActive = user.Aktiv,
+            BirthDate = user.BirthDate,                        
+            ErstelltAm = user.ErstelltAm
+        };
+
+        return Result<UserResponseDTO>.Ok(response);
+    }
+
+
 
 
 }

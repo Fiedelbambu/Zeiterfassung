@@ -61,6 +61,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+
 // JWT Auth
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSection);
