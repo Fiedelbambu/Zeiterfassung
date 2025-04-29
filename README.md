@@ -1,6 +1,6 @@
-# IST-Zeiterfassung
+# Zeiterfassung
 
-IST-Zeiterfassung ist eine moderne, webbasierte Plattform zur Arbeitszeiterfassung für kleine bis mittlere Unternehmen. Sie ermöglicht die Erfassung, Verwaltung und Auswertung von Arbeitszeiten und integriert Funktionen wie NFC-Terminals, Home Office-Unterstützung und Monatsberichte mit Export.
+Zeiterfassung ist eine moderne, webbasierte Plattform zur Arbeitszeiterfassung für kleine bis mittlere Unternehmen. Sie ermöglicht die Erfassung, Verwaltung und Auswertung von Arbeitszeiten und integriert Funktionen wie NFC-Terminals, Home Office-Unterstützung und Monatsberichte mit Export.
 
 ## Projektziel
 
@@ -97,9 +97,9 @@ Pull Requests sind willkommen. Bitte beachte die demnächst verfügbare Datei CO
 ################################################################################################################################################
 
 
-# IST Time Tracking
+# Time Tracking
 
-IST Time Tracking is a modern, web-based time tracking platform for small to mid-sized companies. It enables employees to record their working hours while providing administrators with full control, export options, and hardware integration.
+Time Tracking is a modern, web-based time tracking platform for small to mid-sized companies. It enables employees to record their working hours while providing administrators with full control, export options, and hardware integration.
 
 ## Project Goal
 
