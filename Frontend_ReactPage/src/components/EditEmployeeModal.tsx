@@ -1,59 +1,72 @@
-import React, { useState } from 'react';
-import { getToken } from '../utils/auth';
-
+import React, { useState } from "react";
+import { getToken } from "../utils/auth";
 
 interface EditEmployeeModalProps {
-    onClose: () => void;
     user: {
       id: string;
       username: string;
       abteilung?: string;
       telefon?: string;
       standort?: string;
+      role: string; // wichtig für Rollenauswahl
     };
-    onSuccess?: () => void; // Für Reload
+    onClose: () => void;
+    onSuccess?: () => void;
   }
   
 
-export default function EditEmployeeModal({ user, onClose }: EditEmployeeModalProps) {
-  const [abteilung, setAbteilung] = useState(user.abteilung || '');
-  const [telefon, setTelefon] = useState(user.telefon || '');
-  const [standort, setStandort] = useState(user.standort || '');
+export default function EditEmployeeModal({
+  user,
+  onClose,
+    onSuccess, 
+}: EditEmployeeModalProps) {
+  const [abteilung, setAbteilung] = useState(user.abteilung || "");
+  const [telefon, setTelefon] = useState(user.telefon || "");
+  const [standort, setStandort] = useState(user.standort || "");
+  const [role, setRole] = useState(user.role); // 👈 vorhandene Rolle übernehmen
+  if (onSuccess) onSuccess(); // Nur wenn übergeben
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`https://localhost:7123/api/UserAdmin/${user.id}/employee`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({
-          abteilung,
-          telefon,
-          standort
-        })
-      });
-  
+      const response = await fetch(
+        `https://localhost:7123/api/UserAdmin/${user.id}/employee`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify({
+            abteilung,
+            telefon,
+            standort,
+            role 
+          }),
+        }
+      );
+
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || 'Fehler beim Speichern der Mitarbeiterdaten.');
+        throw new Error(
+          result.message || "Fehler beim Speichern der Mitarbeiterdaten."
+        );
       }
-  
-      alert('Mitarbeiterdaten gespeichert.');
+
+      alert("Mitarbeiterdaten gespeichert.");
       onClose();
       if (onSuccess) onSuccess(); // Reload
     } catch (err: any) {
-      alert(err.message || 'Unbekannter Fehler beim Speichern.');
-      console.error('Fehler beim Speichern:', err);
+      alert(err.message || "Unbekannter Fehler beim Speichern.");
+      console.error("Fehler beim Speichern:", err);
     }
   };
-  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-        <h2 className="text-lg font-semibold mb-4">Mitarbeiterdaten bearbeiten</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          Mitarbeiterdaten bearbeiten
+        </h2>
 
         <div className="space-y-3">
           <div>
@@ -85,6 +98,18 @@ export default function EditEmployeeModal({ user, onClose }: EditEmployeeModalPr
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
           </div>
+        </div>
+        {/* Rolle */}
+        <div>
+          <label className="block mb-1 font-medium">Rolle</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+          >
+            <option value="Employee">Mitarbeiter</option>
+            <option value="Admin">Admin</option>
+          </select>
         </div>
 
         <div className="flex justify-end mt-6 space-x-2">

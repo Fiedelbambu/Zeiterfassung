@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { getToken } from "../utils/auth";
 import EditEmployeeModal from "./EditEmployeeModal";
+import ActionDropdownPortal from './ActionDropdownPortal';
+import { useRef } from 'react';
 
 interface User {
   id: string;
@@ -21,7 +23,6 @@ interface User {
   standort?: string;
 }
 
-
 interface UserTableProps {
   onEditUser: (user: User) => void;
   reloadRef: React.RefObject<() => void>; // Funktion zum Neuladen der Tabelle
@@ -29,11 +30,16 @@ interface UserTableProps {
 
 export default function UserTable({ onEditUser, reloadRef }: UserTableProps) {
   const [users, setUsers] = useState<User[]>([]);
+  const menuAnchorRef = useRef<HTMLTableCellElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [openUserId, setOpenUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const roles = ["Admin", "Employee"]; // später erweiterbar
+  const [sortField, setSortField] = useState<keyof User>("username");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  
   const [editingEmployeeUser, setEditingEmployeeUser] = useState<User | null>(
     null
   );
@@ -50,49 +56,21 @@ export default function UserTable({ onEditUser, reloadRef }: UserTableProps) {
       (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleRoleChange = async (user: User, neueRolle: string) => {
-    if (neueRolle === user.role) return; // keine Änderung nötig
-
-    try {
-      const response = await fetch(
-        `https://localhost:7123/api/UserAdmin/${user.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({
-            name: user.name,
-            lastName: user.lastName,
-            email: user.email,
-            employeeNumber: user.employeeNumber,
-            birthDate: user.birthDate,
-            aktiv: user.aktiv,
-            role: neueRolle,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        alert(`Rolle erfolgreich geändert zu ${neueRolle}`);
-        fetchUsers(); // reload Tabelle
-      } else {
-        const result = await response.json();
-        alert(result.message || "Fehler beim Rollenwechsel.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Fehler beim Rollenwechsel.");
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortField === "birthDate" || sortField === "erstelltAm") {
+      return sortDirection === "asc"
+        ? new Date(a[sortField] ?? "").getTime() - new Date(b[sortField] ?? "").getTime()
+        : new Date(b[sortField] ?? "").getTime() - new Date(a[sortField] ?? "").getTime();
     }
-  };
-
-  const handleEmployeeEdit = (user: User) => {
-    alert(
-      `Mitarbeiterdaten von ${user.username} bearbeiten (noch nicht implementiert).`
-    );
-  };
-
+  
+    const aVal = (a[sortField] ?? "").toString().toLowerCase();
+    const bVal = (b[sortField] ?? "").toString().toLowerCase();
+  
+    return sortDirection === "asc"
+      ? aVal.localeCompare(bVal)
+      : bVal.localeCompare(aVal);
+  });
+  
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -152,8 +130,8 @@ export default function UserTable({ onEditUser, reloadRef }: UserTableProps) {
   };
 
   return (
-    <div className="bg-white shadow rounded overflow-x-auto">
-      {loading && <p className="p-4">Lade Benutzer...</p>}
+<div className="bg-white shadow rounded overflow-x-auto max-h-[80vh] overflow-y-auto">
+{loading && <p className="p-4">Lade Benutzer...</p>}
       {error && <p className="p-4 text-red-600">{error}</p>}
 
       {/*Suchfeld */}
@@ -164,29 +142,46 @@ export default function UserTable({ onEditUser, reloadRef }: UserTableProps) {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="mb-4 p-2 border rounded w-full max-w-md"
       />
-
       {!loading && !error && (
         <table className="min-w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left font-semibold">Benutzername</th>
-              <th className="p-3 text-left font-semibold">Vorname</th>
-              <th className="p-3 text-left font-semibold">Nachname</th>
-              <th className="p-3 text-left font-semibold">E-Mail</th>
-              <th className="p-3 text-left font-semibold">Geburtsdatum</th>
-              <th className="p-3 text-left font-semibold">Mitarbeiter-Nr.</th>
-              <th className="p-3 text-left font-semibold">Abteilung</th>
-              <th className="p-3 text-left font-semibold">Telefon</th>
-              <th className="p-3 text-left font-semibold">Standort</th>
-              <th className="p-3 text-left font-semibold">Rolle</th>
-              <th className="p-3 text-left font-semibold">Status</th>
-              <th className="p-3 text-left font-semibold">Erstellt am</th>
-              <th className="p-3 text-left font-semibold">Aktionen</th>
-            </tr>
-          </thead>
+        <thead className="bg-gray-100">
+          <tr>
+            {[
+              { label: "Benutzername", field: "username" },
+              { label: "Vorname", field: "name" },
+              { label: "Nachname", field: "lastName" },
+              { label: "E-Mail", field: "email" },
+              { label: "Geburtsdatum", field: "birthDate" },
+              { label: "Mitarbeiter-Nr.", field: "employeeNumber" },
+              { label: "Abteilung", field: "abteilung" },
+              { label: "Telefon", field: "telefon" },
+              { label: "Standort", field: "standort" },
+              { label: "Rolle", field: "role" },
+              { label: "Status", field: "aktiv" },
+              { label: "Erstellt am", field: "erstelltAm" }
+            ].map(({ label, field }) => (
+              <th
+                key={field}
+                className="p-3 text-left font-semibold cursor-pointer"
+                onClick={() => {
+                  if (sortField === field) {
+                    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+                  } else {
+                    setSortField(field as keyof User);
+                    setSortDirection("asc");
+                  }
+                }}
+              >
+                {label} {sortField === field && (sortDirection === "asc" ? "▲" : "▼")}
+              </th>
+            ))}
+            <th className="p-3 text-left font-semibold">Aktionen</th>
+          </tr>
+        </thead>
+          
 
           <tbody>
-            {filteredUsers.map((user) => (
+          {sortedUsers.map((user) => (
               <tr key={user.id} className="border-b">
                 <td className="p-3">{user.username}</td>
                 <td className="p-3">{user.name}</td>
@@ -212,71 +207,55 @@ export default function UserTable({ onEditUser, reloadRef }: UserTableProps) {
                 <td className="p-3">
                   {new Date(user.erstelltAm).toLocaleDateString()}
                 </td>
-                <td className="p-3 relative">
-                  <button
-                    onClick={() => toggleMenu(user.id)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Aktionen ▾
-                  </button>
-                  {openUserId === user.id && (
-                    <div className="absolute right-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                      <ul className="py-1 text-sm text-gray-700">
-                        <li>
-                          <button
-                            onClick={() => {
-                              handleEdit(user);
-                              setOpenUserId(null);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                          >
-                            Benutzer bearbeiten
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            onClick={() => {
-                              handleEmployeeEdit(user);
-                              setOpenUserId(null);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                          >
-                            Mitarbeiterdaten
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            onClick={() => {
-                              handleDelete(user);
-                              setOpenUserId(null);
-                            }}
-                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                          >
-                            Löschen
-                          </button>
-                        </li>
-                        <li className="px-4 py-2">
-                          <label className="block text-sm text-gray-700 mb-1">
-                            Rolle ändern:
-                          </label>
-                          <select
-                            value={user.role}
-                            onChange={(e) =>
-                              handleRoleChange(user, e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                          >
-                            {roles.map((role) => (
-                              <option key={role} value={role}>
-                                {role}
-                              </option>
-                            ))}
-                          </select>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                </td>
+                <td className="p-3 relative" ref={menuAnchorRef}>
+  <button
+    onClick={() => toggleMenu(user.id)}
+    className="text-blue-600 hover:underline"
+  >
+    Aktionen ▾
+  </button>
+
+  {openUserId === user.id && (
+    <ActionDropdownPortal anchorRef={menuAnchorRef} onClose={() => setOpenUserId(null)}>
+      <ul className="min-w-[160px] py-1 text-sm">
+        <li>
+          <button
+            onClick={() => {
+              handleEdit(user);
+              setOpenUserId(null);
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+          >
+            Benutzer bearbeiten
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => {
+              setEditingEmployeeUser(user);
+              setOpenUserId(null);
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+          >
+            Mitarbeiterdaten
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => {
+              handleDelete(user);
+              setOpenUserId(null);
+            }}
+            className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+          >
+            Löschen
+          </button>
+        </li>
+      </ul>
+    </ActionDropdownPortal>
+  )}
+</td>
+
               </tr>
             ))}
           </tbody>
