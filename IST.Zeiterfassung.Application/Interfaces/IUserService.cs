@@ -7,15 +7,16 @@ using IST.Zeiterfassung.Application.DTOs.User;
 using IST.Zeiterfassung.Application.Results;
 using IST.Zeiterfassung.Domain.Entities;
 using IST.Zeiterfassung.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace IST.Zeiterfassung.Application.Interfaces
 {
     public interface IUserService
     {
        Task<Result<UserResponseDTO>> UpdateUserAsync(Guid id, UpdateUserDTO dto);
-
+        
         Task<Result<UserResponseDTO>> RegisterAsync(RegisterUserDTO dto);
-
+        Task<Result<UserDeleteResult>> DeleteUserAsync(Guid id);
         Task<Result<User>> LoginAsync(LoginUserDTO dto, HttpContext context);
         Task<List<UserResponseDTO>> GetAllAsync();
         Task<Result<UserResponseDTO>> GetByIdAsync(Guid id);

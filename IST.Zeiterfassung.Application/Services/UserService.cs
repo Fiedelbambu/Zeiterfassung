@@ -376,8 +376,24 @@ public class UserService : IUserService
 
         return Result<UserResponseDTO>.Ok(response);
     }
+        
+    public async Task<Result<UserDeleteResult>> DeleteUserAsync(Guid id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            return Result<UserDeleteResult>.Fail("Benutzer nicht gefunden.");
 
+        // Beispiel für Logik: Admins werden deaktiviert statt gelöscht
+        if (user.Role == Role.Admin)
+        {
+            user.Aktiv = false;
+            await _userRepository.UpdateAsync(user);
+            return Result<UserDeleteResult>.Ok(UserDeleteResult.LogicallyDeactivated);
+        }
 
+        await _userRepository.DeleteAsync(user);
+        return Result<UserDeleteResult>.Ok(UserDeleteResult.PhysicallyDeleted);
+    }
 
 
 }

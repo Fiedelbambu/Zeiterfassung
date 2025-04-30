@@ -26,6 +26,11 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.QrToken == token);
     }
 
+    public async Task DeleteAsync(User user)
+    {
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+    }
 
 
     public async Task AddAsync(User user)

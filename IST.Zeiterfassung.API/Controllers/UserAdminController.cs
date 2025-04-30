@@ -126,6 +126,27 @@ namespace IST.Zeiterfassung.API.Controllers
         }
 
 
+        /// <summary>
+        /// Löscht einen Benutzer (physisch oder logisch).
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+
+            if (!result.Success)
+                return NotFound(new { message = result.ErrorMessage });
+
+            return result.Value switch
+            {
+                UserDeleteResult.PhysicallyDeleted => NoContent(),
+                UserDeleteResult.LogicallyDeactivated => Ok(new { message = "Benutzer wurde deaktiviert." }),
+                _ => StatusCode(500, new { message = "Unbekannter Löschstatus." })
+            };
+        }
+
 
     }
 }
