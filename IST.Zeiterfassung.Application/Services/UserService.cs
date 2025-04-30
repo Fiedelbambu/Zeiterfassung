@@ -218,16 +218,20 @@ public class UserService : IUserService
         {
             Id = u.Id,
             Username = u.Username,
-            Email = u.Email ?? string.Empty,
-            Role = u.Role.ToString(),
-            Aktiv = u.Aktiv,
-            ErstelltAm = u.ErstelltAm,
-            ZeitmodellId = u.ZeitmodellId,                        
             Name = u.Name,
             LastName = u.LastName,
+            Email = u.Email,
+            Role = u.Role.ToString(),
             EmployeeNumber = u.EmployeeNumber,
-            BirthDate = u.BirthDate
+            BirthDate = u.BirthDate,
+            Abteilung = u.Abteilung,
+            Telefon = u.Telefon,
+            Standort = u.Standort,
+            Aktiv = u.Aktiv,
+            ErstelltAm = u.ErstelltAm,
+            ZeitmodellId = u.ZeitmodellId
         }).ToList();
+
     }
 
     public async Task<Result<string>> SetNfcIdAsync(Guid userId, SetNfcIdDTO dto)
@@ -394,6 +398,21 @@ public class UserService : IUserService
         await _userRepository.DeleteAsync(user);
         return Result<UserDeleteResult>.Ok(UserDeleteResult.PhysicallyDeleted);
     }
+    public async Task<Result<UpdateEmployeeDTO>> UpdateEmployeeDataAsync(Guid id, UpdateEmployeeDTO dto)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            return Result<UpdateEmployeeDTO>.Fail("Benutzer nicht gefunden.");
+
+        user.Abteilung = dto.Abteilung;
+        user.Telefon = dto.Telefon;
+        user.Standort = dto.Standort;
+
+        await _userRepository.UpdateAsync(user);
+
+        return Result<UpdateEmployeeDTO>.Ok(dto);
+    }
+
 
 
 }

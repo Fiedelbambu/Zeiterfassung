@@ -180,6 +180,9 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Abteilung")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Aktiv")
                         .HasColumnType("INTEGER");
 
@@ -233,6 +236,12 @@ namespace IST.Zeiterfassung.Persistence.Migrations
 
                     b.Property<int>("Role")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Standort")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
                         .IsRequired()

@@ -14,4 +14,11 @@ public class UserListItemDTO
     public string? LastName { get; set; }
     public string? EmployeeNumber { get; set; }
     public DateTime? BirthDate { get; set; }
+    public string? Abteilung { get; set; }
+    public string? Telefon { get; set; }
+    public string? Standort { get; set; }
+
+
+
+
 }

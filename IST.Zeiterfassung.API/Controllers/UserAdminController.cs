@@ -58,6 +58,19 @@ namespace IST.Zeiterfassung.API.Controllers
             return Ok(new { message = result.Value });
         }
 
+        /// <summary> Update der Rolle eines Benutzers.</summary>
+        [HttpPut("{id}/employee")]
+        public async Task<IActionResult> UpdateEmployeeData(Guid id, [FromBody] UpdateEmployeeDTO dto)
+        {
+            var result = await _userService.UpdateEmployeeDataAsync(id, dto);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok(result.Value);
+        }
+
+
         /// <summary>
         /// Setzt oder entfernt ein QR-Token für einen Benutzer.
         /// </summary>

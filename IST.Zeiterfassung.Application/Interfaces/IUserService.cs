@@ -14,7 +14,8 @@ namespace IST.Zeiterfassung.Application.Interfaces
     public interface IUserService
     {
        Task<Result<UserResponseDTO>> UpdateUserAsync(Guid id, UpdateUserDTO dto);
-        
+        Task<Result<UpdateEmployeeDTO>> UpdateEmployeeDataAsync(Guid id, UpdateEmployeeDTO dto);
+
         Task<Result<UserResponseDTO>> RegisterAsync(RegisterUserDTO dto);
         Task<Result<UserDeleteResult>> DeleteUserAsync(Guid id);
         Task<Result<User>> LoginAsync(LoginUserDTO dto, HttpContext context);

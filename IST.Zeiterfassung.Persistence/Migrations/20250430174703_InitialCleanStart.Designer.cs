@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250427143940_FinalUserFix")]
-    partial class FinalUserFix
+    [Migration("20250430174703_InitialCleanStart")]
+    partial class InitialCleanStart
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -183,6 +183,9 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Abteilung")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Aktiv")
                         .HasColumnType("INTEGER");
 
@@ -236,6 +239,12 @@ namespace IST.Zeiterfassung.Persistence.Migrations
 
                     b.Property<int>("Role")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Standort")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
                         .IsRequired()

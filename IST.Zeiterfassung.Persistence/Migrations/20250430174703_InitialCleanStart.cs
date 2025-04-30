@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitFullClean : Migration
+    public partial class InitialCleanStart : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,35 +28,6 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Username = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false, defaultValue: ""),
-                    LastName = table.Column<string>(type: "TEXT", nullable: false),
-                    BirthDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    EmployeeNumber = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: true),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
-                    Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    Aktiv = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ErstelltAm = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    FeiertagsRegion = table.Column<string>(type: "TEXT", nullable: false),
-                    ZeitmodellId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    LoginMethode = table.Column<int>(type: "INTEGER", nullable: false),
-                    NfcId = table.Column<string>(type: "TEXT", nullable: true),
-                    QrToken = table.Column<string>(type: "TEXT", nullable: true),
-                    QrTokenExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LetzteErfassung = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LetzterLoginOrt = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Zeitmodelle",
                 columns: table => new
                 {
@@ -71,6 +42,43 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Zeitmodelle", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Username = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    LastName = table.Column<string>(type: "TEXT", nullable: false),
+                    BirthDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    EmployeeNumber = table.Column<string>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
+                    Role = table.Column<int>(type: "INTEGER", nullable: false),
+                    Aktiv = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ErstelltAm = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    FeiertagsRegion = table.Column<string>(type: "TEXT", nullable: false),
+                    ZeitmodellId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LoginMethode = table.Column<int>(type: "INTEGER", nullable: false),
+                    NfcId = table.Column<string>(type: "TEXT", nullable: true),
+                    QrToken = table.Column<string>(type: "TEXT", nullable: true),
+                    QrTokenExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LetzteErfassung = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LetzterLoginOrt = table.Column<string>(type: "TEXT", nullable: true),
+                    Abteilung = table.Column<string>(type: "TEXT", nullable: true),
+                    Telefon = table.Column<string>(type: "TEXT", nullable: true),
+                    Standort = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Zeitmodelle_ZeitmodellId",
+                        column: x => x.ZeitmodellId,
+                        principalTable: "Zeitmodelle",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -206,6 +214,11 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 name: "IX_TimeEntries_ZeitmodellUserId",
                 table: "TimeEntries",
                 column: "ZeitmodellUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_ZeitmodellId",
+                table: "Users",
+                column: "ZeitmodellId");
         }
 
         /// <inheritdoc />
@@ -224,10 +237,10 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 name: "TimeEntries");
 
             migrationBuilder.DropTable(
-                name: "Zeitmodelle");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Zeitmodelle");
         }
     }
 }

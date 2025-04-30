@@ -36,5 +36,8 @@ namespace IST.Zeiterfassung.Domain.Entities
         public DateTime? QrTokenExpiresAt { get; set; }
         public DateTime? LetzteErfassung { get; set; }
         public string? LetzterLoginOrt { get; set; }
+        public string? Abteilung { get; set; }
+        public string? Telefon { get; set; }
+        public string? Standort { get; set; }
     }
 }
