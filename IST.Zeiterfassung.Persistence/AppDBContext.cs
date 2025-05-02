@@ -12,7 +12,10 @@ namespace IST.Zeiterfassung.Persistence
 {
     public class AppDbContext : DbContext
     {
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+        public DbSet<TokenConfig> TokenConfigs => Set<TokenConfig>();
 
         public DbSet<Feiertag> Feiertage => Set<Feiertag>();
         public DbSet<User> Users => Set<User>();
@@ -50,7 +53,87 @@ namespace IST.Zeiterfassung.Persistence
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-        }
+            // SystemSettings-Konfiguration inkl. Seed
+            modelBuilder.Entity<SystemSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
 
+                // Allgemeine Einstellungen
+                entity.Property(e => e.Language).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.FontSize).IsRequired();
+                entity.Property(e => e.BackgroundImageUrl).HasMaxLength(500);
+                entity.Property(e => e.AutoSendReports).IsRequired();
+                entity.Property(e => e.DownloadOnly).IsRequired();
+                entity.Property(e => e.SendOnDay).IsRequired();
+                entity.Property(e => e.ReportWithSignatureField).IsRequired();
+
+                // Token- & Authentifizierung
+                entity.Property(e => e.TokenMaxLifetime).IsRequired();
+                entity.Property(e => e.QrTokenSingleUse).IsRequired();
+
+                // Erinnerung & Prüfregeln
+                entity.Property(e => e.EnableReminder).IsRequired();
+                entity.Property(e => e.RemindAfterDays).IsRequired();
+                entity.Property(e => e.ErrorTypesToCheck).HasMaxLength(500);
+
+                // Feiertage
+                entity.Property(e => e.HolidaySource).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.HolidayRegionCode).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.AutoSyncHolidays).IsRequired();
+
+                // Navigation
+                entity.HasMany(e => e.TokenConfigs)
+                      .WithOne()
+                      .HasForeignKey(tc => tc.SystemSettingsId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Seed-Daten
+                entity.HasData(new SystemSettings
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Language = "de",
+                    FontSize = 1,
+                    BackgroundImageUrl = null,
+                    AutoSendReports = false,
+                    DownloadOnly = false,
+                    SendOnDay = 1,
+                    ReportWithSignatureField = false,
+                    TokenMaxLifetime = TimeSpan.FromHours(24),
+                    QrTokenSingleUse = true,
+                    EnableReminder = false,
+                    RemindAfterDays = 3,
+                    ErrorTypesToCheck = "NurKommen,KeinePauseEnde",
+                    HolidaySource = "API",
+                    HolidayRegionCode = "DE-BY",
+                    AutoSyncHolidays = true
+                });
+            });
+
+            modelBuilder.Entity<TokenConfig>(entity =>
+            {
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.LoginType).IsRequired();
+                entity.Property(t => t.ValidityDuration).IsRequired();
+                entity.Property(t => t.SystemSettingsId).IsRequired();
+
+                entity.HasData(
+                    new TokenConfig
+                    {
+                        Id = Guid.Parse("22222222-1111-1111-1111-111111111111"),
+                        LoginType = Domain.Enums.LoginMethod.Passwort,
+                        ValidityDuration = TimeSpan.FromMinutes(60),
+                        SystemSettingsId = Guid.Parse("11111111-1111-1111-1111-111111111111")
+                    },
+                    new TokenConfig
+                    {
+                        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                        LoginType = Domain.Enums.LoginMethod.QRCode,
+                        ValidityDuration = TimeSpan.FromMinutes(10),
+                        SystemSettingsId = Guid.Parse("11111111-1111-1111-1111-111111111111")
+                    }
+                );
+            });
+                       
+        }
     }
 }

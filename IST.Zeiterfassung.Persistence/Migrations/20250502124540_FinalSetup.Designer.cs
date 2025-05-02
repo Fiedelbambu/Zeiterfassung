@@ -3,6 +3,7 @@ using System;
 using IST.Zeiterfassung.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250502124540_FinalSetup")]
+    partial class FinalSetup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -291,6 +294,20 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            LoginType = 4,
+                            SystemSettingsId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ValidityDuration = new TimeSpan(0, 0, 10, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-aaaa-4444-8888-111111111111"),
+                            LoginType = 1,
+                            SystemSettingsId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ValidityDuration = new TimeSpan(0, 1, 0, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-bbbb-5555-9999-222222222222"),
                             LoginType = 4,
                             SystemSettingsId = new Guid("11111111-1111-1111-1111-111111111111"),
                             ValidityDuration = new TimeSpan(0, 0, 10, 0, 0)

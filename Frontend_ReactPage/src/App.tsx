@@ -1,13 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoginForm from './pages/LoginForm';
-import Dashboard from './pages/Dashboard';
-import EmployeeDashboard from './pages/EmployeeDashboard';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoginForm from "./pages/LoginForm";
+import Dashboard from "./pages/Dashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 
-import UsersPage from './pages/UsersPage';
-import TimesPage from './pages/TimesPage';
-import AbsencesPage from './pages/AbsencesPage';
-import ReportsPage from './pages/ReportsPage';
-import SettingsPage from './pages/SettingsPage';
+import UsersPage from "./pages/UsersPage";
+import TimesPage from "./pages/TimesPage";
+import AbsencesPage from "./pages/AbsencesPage";
+import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
           <Route path="absences" element={<AbsencesPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="admin-settings" element={<AdminSettingsPage />} />{" "}
+          
         </Route>
 
         {/* Mitarbeiter-Dashboard */}

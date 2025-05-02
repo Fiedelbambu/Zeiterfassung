@@ -13,6 +13,7 @@ using IST.Zeiterfassung.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<ILoginAuditRepository, LoginAuditRepository>();
 builder.Services.AddScoped<IZeitmodellRepository, ZeitmodellRepository>();
 builder.Services.AddScoped<IFeiertagRepository, FeiertagRepository>();
 builder.Services.AddScoped<FeiertagsImportService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>(); // 🔧 HINZUFÜGEN!
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation()
@@ -43,10 +45,38 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserValidator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // bestehend:
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
+
+    // ➕ NEU: JWT-Auth-Schema ergänzen
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Gib hier deinen gültigen JWT ein: Bearer <token>"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
+
 
 // CORS – Muss vor Build()
 builder.Services.AddCors(options =>
@@ -68,7 +98,7 @@ builder.Services.AddCors(options =>
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSection);
 var jwtSettings = jwtSection.Get<JwtSettings>();
-var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 
 builder.Services.AddAuthentication(options =>
 {

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250430174703_InitialCleanStart")]
-    partial class InitialCleanStart
+    [Migration("20250502132538_ApplyInitialSystemSettingsSeed")]
+    partial class ApplyInitialSystemSettingsSeed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -122,6 +122,91 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.ToTable("LoginAudits");
                 });
 
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.SystemSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("AutoSendReports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AutoSyncHolidays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BackgroundImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("DownloadOnly")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("EnableReminder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ErrorTypesToCheck")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FontSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("HolidayRegionCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HolidaySource")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("QrTokenSingleUse")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RemindAfterDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ReportWithSignatureField")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SendOnDay")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan>("TokenMaxLifetime")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            AutoSendReports = false,
+                            AutoSyncHolidays = true,
+                            DownloadOnly = false,
+                            EnableReminder = false,
+                            ErrorTypesToCheck = "NurKommen,KeinePauseEnde",
+                            FontSize = 1,
+                            HolidayRegionCode = "DE-BY",
+                            HolidaySource = "API",
+                            Language = "de",
+                            QrTokenSingleUse = true,
+                            RemindAfterDays = 3,
+                            ReportWithSignatureField = false,
+                            SendOnDay = 1,
+                            TokenMaxLifetime = new TimeSpan(1, 0, 0, 0, 0)
+                        });
+                });
+
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.TimeEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -175,6 +260,44 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.HasIndex("ZeitmodellUserId");
 
                     b.ToTable("TimeEntries");
+                });
+
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.TokenConfig", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LoginType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SystemSettingsId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan>("ValidityDuration")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemSettingsId");
+
+                    b.ToTable("TokenConfigs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-1111-1111-1111-111111111111"),
+                            LoginType = 1,
+                            SystemSettingsId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ValidityDuration = new TimeSpan(0, 1, 0, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            LoginType = 4,
+                            SystemSettingsId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ValidityDuration = new TimeSpan(0, 0, 10, 0, 0)
+                        });
                 });
 
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.User", b =>
@@ -345,6 +468,15 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                     b.Navigation("ZeitmodellUser");
                 });
 
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.TokenConfig", b =>
+                {
+                    b.HasOne("IST.Zeiterfassung.Domain.Entities.SystemSettings", null)
+                        .WithMany("TokenConfigs")
+                        .HasForeignKey("SystemSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.User", b =>
                 {
                     b.HasOne("IST.Zeiterfassung.Domain.Entities.Zeitmodell", "Zeitmodell")
@@ -352,6 +484,11 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         .HasForeignKey("ZeitmodellId");
 
                     b.Navigation("Zeitmodell");
+                });
+
+            modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.SystemSettings", b =>
+                {
+                    b.Navigation("TokenConfigs");
                 });
 
             modelBuilder.Entity("IST.Zeiterfassung.Domain.Entities.User", b =>

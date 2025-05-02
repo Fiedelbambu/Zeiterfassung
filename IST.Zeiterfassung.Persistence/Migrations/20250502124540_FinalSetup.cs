@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace IST.Zeiterfassung.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCleanStart : Migration
+    public partial class FinalSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,6 +30,32 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SystemSettings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Language = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    FontSize = table.Column<int>(type: "INTEGER", nullable: false),
+                    BackgroundImageUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    AutoSendReports = table.Column<bool>(type: "INTEGER", nullable: false),
+                    DownloadOnly = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SendOnDay = table.Column<int>(type: "INTEGER", nullable: false),
+                    ReportWithSignatureField = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TokenMaxLifetime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    QrTokenSingleUse = table.Column<bool>(type: "INTEGER", nullable: false),
+                    EnableReminder = table.Column<bool>(type: "INTEGER", nullable: false),
+                    RemindAfterDays = table.Column<int>(type: "INTEGER", nullable: false),
+                    ErrorTypesToCheck = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    HolidaySource = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    HolidayRegionCode = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    AutoSyncHolidays = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemSettings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Zeitmodelle",
                 columns: table => new
                 {
@@ -42,6 +70,26 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Zeitmodelle", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TokenConfigs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    LoginType = table.Column<int>(type: "INTEGER", nullable: false),
+                    ValidityDuration = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    SystemSettingsId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TokenConfigs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TokenConfigs_SystemSettings_SystemSettingsId",
+                        column: x => x.SystemSettingsId,
+                        principalTable: "SystemSettings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -180,6 +228,22 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "SystemSettings",
+                columns: new[] { "Id", "AutoSendReports", "AutoSyncHolidays", "BackgroundImageUrl", "DownloadOnly", "EnableReminder", "ErrorTypesToCheck", "FontSize", "HolidayRegionCode", "HolidaySource", "Language", "QrTokenSingleUse", "RemindAfterDays", "ReportWithSignatureField", "SendOnDay", "TokenMaxLifetime" },
+                values: new object[] { new Guid("11111111-1111-1111-1111-111111111111"), false, true, null, false, false, "NurKommen,KeinePauseEnde", 1, "DE-BY", "API", "de", true, 3, false, 1, new TimeSpan(1, 0, 0, 0, 0) });
+
+            migrationBuilder.InsertData(
+                table: "TokenConfigs",
+                columns: new[] { "Id", "LoginType", "SystemSettingsId", "ValidityDuration" },
+                values: new object[,]
+                {
+                    { new Guid("22222222-1111-1111-1111-111111111111"), 1, new Guid("11111111-1111-1111-1111-111111111111"), new TimeSpan(0, 1, 0, 0, 0) },
+                    { new Guid("22222222-2222-2222-2222-222222222222"), 4, new Guid("11111111-1111-1111-1111-111111111111"), new TimeSpan(0, 0, 10, 0, 0) },
+                    { new Guid("33333333-aaaa-4444-8888-111111111111"), 1, new Guid("11111111-1111-1111-1111-111111111111"), new TimeSpan(0, 1, 0, 0, 0) },
+                    { new Guid("44444444-bbbb-5555-9999-222222222222"), 4, new Guid("11111111-1111-1111-1111-111111111111"), new TimeSpan(0, 0, 10, 0, 0) }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Absences_UserId",
                 table: "Absences",
@@ -216,6 +280,11 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 column: "ZeitmodellUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TokenConfigs_SystemSettingsId",
+                table: "TokenConfigs",
+                column: "SystemSettingsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_ZeitmodellId",
                 table: "Users",
                 column: "ZeitmodellId");
@@ -237,7 +306,13 @@ namespace IST.Zeiterfassung.Persistence.Migrations
                 name: "TimeEntries");
 
             migrationBuilder.DropTable(
+                name: "TokenConfigs");
+
+            migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "SystemSettings");
 
             migrationBuilder.DropTable(
                 name: "Zeitmodelle");
