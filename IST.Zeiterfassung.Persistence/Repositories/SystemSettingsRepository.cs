@@ -3,6 +3,7 @@ using IST.Zeiterfassung.Application.Interfaces;
 using IST.Zeiterfassung.Domain.Entities;
 using IST.Zeiterfassung.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using IST.Zeiterfassung.Persistence;
 
 namespace IST.Zeiterfassung.Persistence.Repositories;
 
@@ -22,29 +23,56 @@ public class SystemSettingsRepository : ISystemSettingsRepository
             .FirstOrDefaultAsync();
     }
 
+
+
+
     public async Task SaveAsync(SystemSettings settings)
     {
-        var existing = await _context.SystemSettings
-            .Include(s => s.TokenConfigs)
-            .FirstOrDefaultAsync();
+        try
+        {
+            var existing = await _context.SystemSettings
+                .Include(s => s.TokenConfigs)
+                .FirstOrDefaultAsync(s => s.Id == settings.Id);
 
-        if (existing == null)
-        {
-            await _context.SystemSettings.AddAsync(settings);
-        }
-        else
-        {
+            if (existing == null)
+            {
+                Console.WriteLine("Kein SystemSettings-Eintrag mit ID gefunden: " + settings.Id);
+                return;
+            }
+
+            // Hauptdaten aktualisieren
             _context.Entry(existing).CurrentValues.SetValues(settings);
 
-            existing.TokenConfigs.Clear();
+            // TokenConfigs aktualisieren (vorher löschen, dann neu hinzufügen)
+            _context.TokenConfigs.RemoveRange(existing.TokenConfigs);
+
             foreach (var token in settings.TokenConfigs)
             {
-                existing.TokenConfigs.Add(token);
-            }
-        }
+                if (token.LoginType == 0 || token.ValidityDuration == TimeSpan.Zero)
+                {
+                    Console.WriteLine("Überspringe fehlerhaften TokenConfig-Eintrag: " + token);
+                    continue;
+                }
 
-        await _context.SaveChangesAsync();
+                token.SystemSettingsId = settings.Id;
+                _context.TokenConfigs.Add(token);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Console.WriteLine("DbUpdateConcurrencyException bei SaveAsync:");
+            Console.WriteLine("   SystemSettings-ID: " + settings.Id);
+            Console.WriteLine("   Ursache: " + ex.Message);
+            throw;
+        }
     }
+
+
+
+
+
 
     public async Task<SystemSettingsDTO> GetSettingsAsync()
     {
@@ -80,7 +108,7 @@ public class SystemSettingsRepository : ISystemSettingsRepository
         settings.QrTokenSingleUse = dto.QrTokenSingleUse;
         settings.EnableReminder = dto.EnableReminder;
         settings.RemindAfterDays = dto.RemindAfterDays;
-        settings.ErrorTypesToCheck = string.Join(",", dto.ErrorTypesToCheck);
+        settings.ErrorTypesToCheck = dto.ErrorTypesToCheck?.ToList() ?? new List<string>();
         settings.HolidaySource = dto.HolidaySource;
         settings.HolidayRegionCode = dto.HolidayRegionCode;
         settings.AutoSyncHolidays = dto.AutoSyncHolidays;

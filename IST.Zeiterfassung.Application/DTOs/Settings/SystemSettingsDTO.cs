@@ -23,7 +23,7 @@ namespace IST.Zeiterfassung.Application.DTOs.Settings
         // Erinnerung & Prüfregeln
         public bool EnableReminder { get; set; }
         public int RemindAfterDays { get; set; }
-        public List<string> ErrorTypesToCheck { get; set; } = new(); // besser später als Enum-List mit Konverter
+        public List<string> ErrorTypesToCheck { get; set; } = new();
 
         // Feiertage
         public string HolidaySource { get; set; } = "API"; // "API" oder "Manuell"

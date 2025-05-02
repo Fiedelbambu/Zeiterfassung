@@ -35,6 +35,8 @@ builder.Services.AddScoped<IZeitmodellRepository, ZeitmodellRepository>();
 builder.Services.AddScoped<IFeiertagRepository, FeiertagRepository>();
 builder.Services.AddScoped<FeiertagsImportService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>(); // 🔧 HINZUFÜGEN!
+builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
+builder.Services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation()
@@ -167,6 +169,6 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IST Zeiterfassung API v1");
 });
-
+app.UseCors("AllowFrontend");
 app.MapControllers();
 app.Run();

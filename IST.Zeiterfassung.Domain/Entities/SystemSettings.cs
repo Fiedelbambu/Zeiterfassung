@@ -27,7 +27,7 @@ namespace IST.Zeiterfassung.Domain.Entities
         // Erinnerung & Prüfung
         public bool EnableReminder { get; set; } = false;
         public int RemindAfterDays { get; set; } = 3;
-        public string ErrorTypesToCheck { get; set; } = ""; // z. B. CSV enum names
+        public List<string> ErrorTypesToCheck { get; set; } = new();
 
         // Feiertage
         public string HolidaySource { get; set; } = "API"; // API oder Manuell
