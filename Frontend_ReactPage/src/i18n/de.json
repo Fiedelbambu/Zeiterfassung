@@ -1,0 +1,29 @@
+{
+  "settings": {
+    "language": "Sprache",
+    "language.de": "Deutsch",
+    "language.en": "Englisch",
+    "fontSize": "Schriftgröße",
+    "backgroundImageUrl": "Hintergrundbild-URL",
+    "autoSendReports": "Berichte automatisch versenden",
+    "downloadOnly": "Nur Download statt Versand",
+    "sendOnDay": "Versand am Tag (1–31)",
+    "reportWithSignatureField": "Unterschriftenfeld in Berichten",
+    "tokenConfigs": "Token-Konfigurationen",
+    "loginType": "Login-Typ",
+    "validityDuration": "Gültigkeit (z. B. 01:00:00)",
+    "addToken": "+ Token hinzufügen",
+    "removeToken": "Entfernen",
+    "tokenMaxLifetime": "Max. Lebensdauer für Tokens",
+    "qrTokenSingleUse": "QR-Token nur einmalig gültig",
+    "enableReminder": "Erinnerungsfunktion aktivieren",
+    "remindAfterDays": "Tage bis zur Erinnerung",
+    "errorTypesToCheck": "Zu prüfende Fehler (Komma getrennt)",
+    "holidaySource": "Feiertagsquelle",
+    "holidayRegionCode": "Region (DE-BY)",
+    "autoSyncHolidays": "Feiertage automatisch synchronisieren",
+    "save": "Einstellungen speichern",
+    "fontSizeLabel": "Schriftgröße (1=klein, 2=normal, 3=groß)"
+
+  }
+}

@@ -4,11 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import LoginImage from '../assets/BigPicture/ZeiterfassungLogin.webp';
 
-interface TokenPayload {
-  username: string;
-  role: string;
-  [key: string]: any;
-}
+
 
 export default function LoginForm() {
   const [username, setUsername] = useState('');
@@ -36,22 +32,20 @@ export default function LoginForm() {
       saveSession(data.token, ""); // Rolle wird gleich geholt, darum leer lassen
 
       // Token auslesen
-      const decoded = jwtDecode<TokenPayload>(data.token);
+      const decoded = jwtDecode<any>(data.token);
+const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
-      if (decoded.role === 'Admin') {
-        navigate('/dashboard');
-      } else {
-        navigate('/employee-dashboard');
-      }
+if (role === "Admin") {
+  navigate("/dashboard");
+} else {
+  navigate("/employee-dashboard");
+}
 
     } catch (err: any) {
       console.error('Fehler beim Login:', err);
       setError('Login fehlgeschlagen. Bitte überprüfe deine Eingaben.');
     }
   };
-
-  // (Rest des Codes bleibt wie bei dir)
-
 
   return (
     <div className="flex min-h-screen bg-gray-100">

@@ -1,0 +1,29 @@
+{
+    "settings": {
+      "language": "Schproch",
+      "language.de": "Deutsch (Österreich)",
+      "language.en": "Englisch",
+      "fontSize": "Schriftgrößn",
+      "backgroundImageUrl": "Hintagrund-Buidl URL",
+      "autoSendReports": "Bericht' automatisch schicka",
+      "downloadOnly": "Nur o'lad'n, nix schicka",
+      "sendOnDay": "Schiacktag im Monat (1–31)",
+      "reportWithSignatureField": "Unterschrift zum Bericht dazua",
+      "tokenConfigs": "Token-Einstellungen",
+      "loginType": "Login-Art",
+      "validityDuration": "Gültigkeitsdauer (z. B. 01:00:00)",
+      "addToken": "+ No a Token einfüg'n",
+      "removeToken": "Weg damit",
+      "tokenMaxLifetime": "Token-Gültigkeit (max.)",
+      "qrTokenSingleUse": "QR-Token nur oamoi gültig",
+      "enableReminder": "Erinnerung einschalt'n",
+      "remindAfterDays": "Tog bis zur Erinnerung",
+      "errorTypesToCheck": "Fehlatyp'n zum Prüfa (mit Komma getrennt)",
+      "holidaySource": "Feiertags-Quelle",
+      "fontSizeLabel": "Schriftnhöh (1=klane, 2=normale, 3=große)",      
+      "holidayRegionCode": "Region (z. B. AT-4 = OÖ)",
+      "autoSyncHolidays": "Feiertag' automatisch hol'n",
+      "save": "Einstellunga speichan"
+    }
+  }
+  
