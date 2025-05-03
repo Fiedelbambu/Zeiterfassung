@@ -7,6 +7,7 @@ import { getToken } from './utils/auth';
 import i18n from './i18n';
 import LanguageProvider from './i18n/LanguageProvider';
 import { SystemSettingsProvider } from './context/SystemSettingsProvider';
+import "./styles/fontSizes.css";
 
 
 
