@@ -23,7 +23,13 @@
     "holidayRegionCode": "Region (DE-BY)",
     "autoSyncHolidays": "Feiertage automatisch synchronisieren",
     "save": "Einstellungen speichern",
-    "fontSizeLabel": "Schriftgröße (1=klein, 2=normal, 3=groß)"
+    "fontSizeLabel": "Schriftgröße",
+    "fontSize":
+    {
+      "small": "Klein",
+      "medium": "Mittel",
+      "large": "Groß"
+    }
 
   }
 }

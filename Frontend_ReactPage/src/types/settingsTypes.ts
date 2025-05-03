@@ -1,7 +1,8 @@
 
 // This file defines the types used in the settings module of the application.
 //         body: JSON.stringify(settings),
-export type FontSizeOption = 'small' | 'normal' | 'large';
+//export type FontSizeOption = 'small' | 'normal' | 'large';
+export type FontSizeOption = 1 | 2 | 3;
 
 export type LoginMethod = 'Passwort' | 'Terminal' | 'NFC' | 'QR' | 'App';
 

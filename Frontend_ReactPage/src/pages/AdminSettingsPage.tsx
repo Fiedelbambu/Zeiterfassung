@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getToken } from "../utils/auth";
 import { useLanguage } from '../i18n/useLanguage';
 import { useTranslation } from 'react-i18next';
+import { FontSizeOption } from "../types/settingsTypes";
 
 
 interface TokenConfig {
@@ -102,20 +103,23 @@ const handleSave = async () => {
         <option value="ooe">Oberösterreichisch</option>
       </select>
 
-      {/* Schriftgröße */}
+  
+{/* Schriftgröße */}
 <div>
   <label>{t('settings.fontSizeLabel')}</label>
-  <input
-    type="number"
-    min={1}
-    max={3}
+  <select
     value={settings.fontSize}
     onChange={(e) =>
-      setSettings({ ...settings, fontSize: parseInt(e.target.value) })
+      setSettings({ ...settings, fontSize: parseInt(e.target.value) as FontSizeOption })
     }
     className="w-full border p-2 mb-4"
-  />
+  >
+    <option value={1}>{t("settings.fontSizeOptions.small")}</option>
+    <option value={2}>{t("settings.fontSizeOptions.normal")}</option>
+    <option value={3}>{t("settings.fontSizeOptions.large")}</option>
+  </select>
 </div>
+
 
       {/* Hintergrundbild */}
       <label>Hintergrundbild-URL</label>

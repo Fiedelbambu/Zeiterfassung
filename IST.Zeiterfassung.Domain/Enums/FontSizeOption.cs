@@ -8,9 +8,9 @@ namespace IST.Zeiterfassung.Domain.Enums
 {
     public enum FontSizeOption
     {
-        Small,
-        Normal,
-        Large
+        Small = 1,
+        Normal = 2,
+        Large = 3
     }
 }
 

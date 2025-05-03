@@ -6,35 +6,44 @@ import './i18n';
 import { getToken } from './utils/auth';
 import i18n from './i18n';
 import LanguageProvider from './i18n/LanguageProvider';
+import { SystemSettingsProvider } from './context/SystemSettingsProvider';
+
+
 
 async function startApp() {
-  try {
-    const res = await fetch("https://localhost:7123/api/settings", {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      },
-    });
+  const token = getToken();
 
-    if (res.ok) {
-      const data = await res.json();
-      const lang = data.language || 'de';
-      await i18n.changeLanguage('de');
-      console.log("Sprache gesetzt auf:", lang);
-    } else {
-      console.warn("Antwort nicht ok, Standardsprache wird verwendet.");
+  if (token) {
+    try {
+      const res = await fetch("https://localhost:7123/api/settings", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const lang = data.language || 'de';
+        await i18n.changeLanguage(lang);
+        console.log("Sprache gesetzt auf:", lang);
+      } else {
+        console.warn("Antwort nicht ok, Standardsprache wird verwendet.");
+      }
+    } catch (err) {
+      console.warn("Fehler beim Laden der Sprache:", err);
     }
-  } catch (err) {
-    console.warn("Fehler beim Laden der Sprache:", err);
+  } else {
+    console.log("Kein Token vorhanden – Sprache wird nicht von API geladen.");
   }
-
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <LanguageProvider>
-        <App />
+        <SystemSettingsProvider>
+          <App />
+        </SystemSettingsProvider>
       </LanguageProvider>
     </StrictMode>
   );
 }
 
 startApp();
+

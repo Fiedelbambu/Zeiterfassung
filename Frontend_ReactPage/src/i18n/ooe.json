@@ -20,7 +20,12 @@
       "remindAfterDays": "Tog bis zur Erinnerung",
       "errorTypesToCheck": "Fehlatyp'n zum Prüfa (mit Komma getrennt)",
       "holidaySource": "Feiertags-Quelle",
-      "fontSizeLabel": "Schriftnhöh (1=klane, 2=normale, 3=große)",      
+      "fontSizeLabel": "Schrieftgrößn (1=klon, 2=normal, 3=groß)",
+      "fontSizeOptions": {
+        "small": "Klon",
+        "normal": "Normal",
+        "large": "Groß"
+      },
       "holidayRegionCode": "Region (z. B. AT-4 = OÖ)",
       "autoSyncHolidays": "Feiertag' automatisch hol'n",
       "save": "Einstellunga speichan"
