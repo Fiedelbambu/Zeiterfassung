@@ -3,6 +3,7 @@ import { getToken } from "../utils/auth";
 import { useLanguage } from '../i18n/useLanguage';
 import { useTranslation } from 'react-i18next';
 import { FontSizeOption } from "../types/settingsTypes";
+import BackgroundImageUploader from "../components/BackgroundImageUploader";
 
 
 interface TokenConfig {
@@ -35,6 +36,7 @@ export default function SystemSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const { setLanguage } = useLanguage();
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -55,33 +57,32 @@ export default function SystemSettingsPage() {
   }, []);
 
 
-const handleSave = async () => {
-  if (!settings) return;
-  setSaving(true);
-  try {
-    const res = await fetch("https://localhost:7123/api/settings", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify(settings),
-    });
-
-    if (!res.ok) throw new Error("Fehler beim Speichern.");
-
-    // Sprache direkt umstellen
-    setLanguage(settings.language);
-    localStorage.setItem('language', settings.language);
-
-    alert("Einstellungen gespeichert.");
-  } catch (e: any) {
-    alert(e.message);
-  } finally {
-    setSaving(false);
-  }
-};
-
+  const handleSave = async () => {
+    if (!settings) return;
+    setSaving(true);
+    try {
+      const res = await fetch("https://localhost:7123/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(settings),
+      });
+  
+      if (!res.ok) throw new Error("Fehler beim Speichern.");
+  
+      setLanguage(settings.language);
+      localStorage.setItem('language', settings.language);
+  
+      alert("Einstellungen gespeichert.");
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+  
 
   if (loading) return <p>Lade Einstellungen...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -121,17 +122,37 @@ const handleSave = async () => {
 </div>
 
 
-      {/* Hintergrundbild */}
-      <label>Hintergrundbild-URL</label>
-      <input
-        type="text"
-        value={settings.backgroundImageUrl || ""}
-        onChange={(e) =>
-          setSettings({ ...settings, backgroundImageUrl: e.target.value })
-        }
-        className="w-full border p-2 mb-4"
-      />
+   {/* Hintergrundbild */}
+<div className="mb-4">
+  <label>{t("settings.backgroundImageUrl")}</label>
+  <BackgroundImageUploader
+  currentUrl={settings.backgroundImageUrl}
+  onUploaded={async (url: string) => {
+    const updatedSettings = { ...settings, backgroundImageUrl: url };
+    setSettings(updatedSettings);
 
+    try {
+      const res = await fetch("https://localhost:7123/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(updatedSettings),
+      });
+
+      if (!res.ok) throw new Error("Speichern der URL fehlgeschlagen.");
+    } catch (err) {
+      console.error("Hintergrund-URL konnte nicht gespeichert werden:", err);
+    }
+  }}
+/>
+
+
+{uploadMessage && (
+  <div className="text-green-600 mt-2">{uploadMessage}</div>
+)}
+</div>
       {/* Auto-Versand */}
       <label>
         <input

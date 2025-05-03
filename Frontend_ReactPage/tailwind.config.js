@@ -1,4 +1,4 @@
-// tailwind.config.js oder tailwind.config.ts
+// tailwind.config.js
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],

@@ -6,33 +6,41 @@ export const SystemSettingsContext = createContext<SystemSettings | null>(null);
 
 export const SystemSettingsProvider = ({ children }: { children: React.ReactNode }) => {
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = getToken();
-    if (!token) return; // Nur wenn eingeloggt
-  
+    if (!token) {
+      setLoading(false); // Kein Token → kein Versuch
+      return;
+    }
+
     const loadSettings = async () => {
       try {
         const res = await fetch("https://localhost:7123/api/settings", {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) return;
-  
+        if (!res.ok) {
+          setLoading(false);
+          return;
+        }
+
         const data = await res.json();
         setSettings(data);
       } catch (err) {
         console.warn("SystemSettings konnten nicht geladen werden", err);
+      } finally {
+        setLoading(false);
       }
     };
-  
+
     loadSettings();
   }, []);
-  
+
+  // Schriftgröße anwenden
   useEffect(() => {
-    // Schriftgröße anwenden, wenn Settings geladen sind
     if (settings?.fontSize) {
       document.body.classList.remove("font-size-small", "font-size-normal", "font-size-large");
-
       switch (settings.fontSize) {
         case 1:
           document.body.classList.add("font-size-small");
@@ -47,9 +55,22 @@ export const SystemSettingsProvider = ({ children }: { children: React.ReactNode
     }
   }, [settings?.fontSize]);
 
+  //Hintergrundbild anwenden
+  useEffect(() => {
+    if (settings?.backgroundImageUrl) {
+      document.body.style.backgroundImage = `url(${settings.backgroundImageUrl})`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundPosition = "center center";
+    }
+  }, [settings?.backgroundImageUrl]);
   
 
- // if (!settings) return null; // Optionale Ladeanzeige
+  // Anzeige für Ladephase
+  if (loading) return <div>Lade Systemeinstellungen...</div>;
+
+  // Wenn kein Token oder keine Settings verfügbar
+  if (!settings) return <>{children}</>;
 
   return (
     <SystemSettingsContext.Provider value={settings}>

@@ -8,5 +8,6 @@ namespace IST.Zeiterfassung.Application.Interfaces
     {
         Task<SystemSettingsDTO> GetSettingsAsync();
         Task UpdateSettingsAsync(SystemSettingsDTO dto);
+        Task<string> UploadBackgroundImageAsync(IFormFile file);
     }
 }
